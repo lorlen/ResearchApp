@@ -1,10 +1,10 @@
-#ifndef PROJEKT_EDITRESEARCHERSDIALOG_H
-#define PROJEKT_EDITRESEARCHERSDIALOG_H
+#ifndef RESEARCHAPP_EDITRESEARCHERSDIALOG_H
+#define RESEARCHAPP_EDITRESEARCHERSDIALOG_H
 
 
 #include <QtWidgets/QDialog>
 #include "ui/ui_editresearchers.h"
-#include "research/research.h"
+#include "research/Research.h"
 
 /**
  * A modal dialog to edit researchers assigned to a research.
@@ -12,7 +12,7 @@
 class EditResearchersDialog: public QDialog {
 private:
     Ui::EditResearchers ui;
-    Research* research;
+    std::shared_ptr<Research> research;
 
 private slots:
     void updateButtons();
@@ -32,8 +32,8 @@ public:
      * @param parent see Qt docs.
      * @param f see Qt docs.
      */
-    explicit EditResearchersDialog(Research* research, QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+    explicit EditResearchersDialog(std::shared_ptr<Research> research, QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 };
 
 
-#endif //PROJEKT_EDITRESEARCHERSDIALOG_H
+#endif //RESEARCHAPP_EDITRESEARCHERSDIALOG_H

@@ -1,10 +1,9 @@
-#ifndef PROJEKT_NEWSENSORDIALOG_H
-#define PROJEKT_NEWSENSORDIALOG_H
+#ifndef RESEARCHAPP_NEWSENSORDIALOG_H
+#define RESEARCHAPP_NEWSENSORDIALOG_H
 
 
 #include <QtWidgets/QDialog>
 #include "ui/ui_newsensor.h"
-#include "research/researchpoint.h"
 
 /**
  * A dialog used to add sensors to the global database.
@@ -23,7 +22,7 @@ signals:
      * Signal fired to notify that a new sensor has been added.
      * @param id ID of the sensor added.
      */
-    void sensorAdded(unsigned int id);
+    void sensorAdded(size_t id);
 
 public:
     /**
@@ -36,4 +35,4 @@ public:
 };
 
 
-#endif //PROJEKT_NEWSENSORDIALOG_H
+#endif //RESEARCHAPP_NEWSENSORDIALOG_H

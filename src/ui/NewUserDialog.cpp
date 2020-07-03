@@ -37,8 +37,8 @@ void NewUserDialog::validateLogin() {
     bool isUserInDb = false;
 
     if (!ui.login->text().isEmpty()) {
-        for (auto user: globals::db.get_users_pointers()) {
-            if (ui.login->text() == user->get_login().c_str()) {
+        for (const auto& [id, user]: globals::db.users()) {
+            if (ui.login->text() == user->login().c_str()) {
                 isUserInDb = true;
                 break;
             }
@@ -67,23 +67,13 @@ void NewUserDialog::validateRetypePass() {
 }
 
 void NewUserDialog::accept() {
-    int id;
+    User user(
+            ui.login->text().toStdString(),
+            ui.displayName->text().toStdString(),
+            ui.password->text().toStdString(),
+            ui.isAdmin->isChecked()
+    );
 
-    if (ui.isAdmin->isChecked()) {
-        id = globals::db.add_admin(
-                ui.login->text().toStdString(),
-                ui.password->text().toStdString(),
-                ui.displayName->text().toStdString()
-        );
-    }
-    else {
-        id = globals::db.add_user(
-                ui.login->text().toStdString(),
-                ui.password->text().toStdString(),
-                ui.displayName->text().toStdString()
-        );
-    }
-
-    emit userAdded(id);
+    emit userAdded(globals::db.addUser(user));
     close();
 }

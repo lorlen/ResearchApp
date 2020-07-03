@@ -1,6 +1,7 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QDesktopWidget>
 #include <QtWidgets/QPushButton>
+#include "db/exceptions.h"
 #include "ui/LoginWindow.h"
 #include "globals.h"
 
@@ -14,13 +15,14 @@ LoginWindow::LoginWindow() : ui{} {
 }
 
 void LoginWindow::tryLogin() {
-    if (globals::db.log_in(ui.loginline->text().toStdString(), ui.passline->text().toStdString()) >= 0) {
+    try {
+        globals::db.logIn(ui.loginline->text().toStdString(), ui.passline->text().toStdString());
         hide();
         globals::mainWindow = new MainWindow{};
         globals::mainWindow->setAttribute(Qt::WA_DeleteOnClose);
         globals::mainWindow->show();
     }
-    else {
+    catch (const UserNotFoundException&) {
         ui.invalidPassword->setText("<span style=\"color: red\">Invalid username or password</span>");
     }
 }

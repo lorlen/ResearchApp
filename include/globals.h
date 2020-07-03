@@ -1,9 +1,9 @@
-#ifndef PROJEKT_GLOBALS_H
-#define PROJEKT_GLOBALS_H
+#ifndef RESEARCHAPP_GLOBALS_H
+#define RESEARCHAPP_GLOBALS_H
 
 
 #include "ui/MainWindow.h"
-#include "db/database.h"
+#include "db/Database.h"
 
 /**
  * Namespace containing a few global objects used throughout the application.
@@ -20,4 +20,4 @@ namespace globals {
 }
 
 
-#endif //PROJEKT_GLOBALS_H
+#endif //RESEARCHAPP_GLOBALS_H

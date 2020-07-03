@@ -5,24 +5,24 @@
 #include "ui/ListItemWithID.h"
 #include "globals.h"
 
-EditResearchersDialog::EditResearchersDialog(Research* research, QWidget* parent, Qt::WindowFlags f)
+EditResearchersDialog::EditResearchersDialog(std::shared_ptr<Research> research, QWidget* parent, Qt::WindowFlags f)
         : QDialog{parent, f}, ui{}, research{research} {
     ui.setupUi(this);
 
-    ui.researchTitle->setText(QString("Research title: ") + research->get_researchTitle().c_str());
+    ui.researchTitle->setText(QString("Research title: ") + research->title().c_str());
 
-    auto allUsers = globals::db.get_users();
-    auto currentUsers = research->get_users_ID();
+    auto currentUsers = research->assignedUsers();
 
-    for (const auto& user: allUsers) {
-        if (std::find(currentUsers.begin(), currentUsers.end(), user.first) == currentUsers.end()) {
-            auto* item = new ListItemWithID{user.first, user.second.c_str()};
+    for (const auto& [id, user]: globals::db.users()) {
+        if (std::find_if(currentUsers.begin(), currentUsers.end(), [&user](auto e) { return *e.lock() == *user; }) == currentUsers.end()) {
+            auto* item = new ListItemWithID{id, user->displayName().c_str()};
             ui.allResearchers->addItem(item);
         }
     }
 
-    for (const auto& userID: currentUsers) {
-        auto* item = new ListItemWithID(userID, globals::db.get_user(userID)->get_name().c_str());
+    for (auto user_weak: currentUsers) {
+        auto user = user_weak.lock();
+        auto* item = new ListItemWithID(user->id(), user->displayName().c_str());
         ui.currentResearchers->addItem(item);
     }
 
@@ -45,7 +45,7 @@ void EditResearchersDialog::updateButtons() {
 }
 
 void EditResearchersDialog::appendUser(unsigned int id) {
-    auto* item = new ListItemWithID{id, globals::db.get_user_name(id).c_str()};
+    auto* item = new ListItemWithID{id, globals::db.users().at(id)->displayName().c_str()};
     ui.allResearchers->addItem(item);
     updateButtons();
 }
@@ -76,7 +76,7 @@ void EditResearchersDialog::deleteResearcher() {
         auto* item = dynamic_cast<ListItemWithID*>(ui.allResearchers->currentItem());
 
         if (item != nullptr) {
-            globals::db.remove_user(item->getID());
+            globals::db.deleteUser(item->getID());
             delete ui.allResearchers->takeItem(ui.allResearchers->currentRow());
         }
     }
@@ -85,14 +85,14 @@ void EditResearchersDialog::deleteResearcher() {
 }
 
 void EditResearchersDialog::applyChanges() {
-    std::vector<unsigned int> userIDs;
+    std::vector<std::shared_ptr<User>> users;
 
     for (int i = 0; i < ui.currentResearchers->count(); i++) {
         auto* item = dynamic_cast<ListItemWithID*>(ui.currentResearchers->item(i));
-        userIDs.push_back(item->getID());
+        users.push_back(globals::db.users().at(item->getID()));
     }
 
-    research->set_users(userIDs);
+    research->assignedUsers(users);
 }
 
 bool EditResearchersDialog::eventFilter(QObject* obj, QEvent* event) {

@@ -7,31 +7,30 @@
 #include "ui/ListItemWithID.h"
 #include "globals.h"
 
-static std::string getSensorDesc(Sensor* sensor) {
+static std::string getSensorDesc(std::shared_ptr<Sensor> sensor) {
     std::ostringstream stream;
-    stream << sensor->get_sensorLabel() << " (" << sensor->get_sensorType() << "; " << sensor->get_sensorUnit() << ")";
+    stream << sensor->label() << " (" << sensor->type() << "; " << sensor->unit() << ")";
     return stream.str();
 }
 
-EditPointDialog::EditPointDialog(ResearchPoint* point, bool blank, QWidget* parent, Qt::WindowFlags f)
+EditPointDialog::EditPointDialog(ResearchPoint& point, bool blank, QWidget* parent, Qt::WindowFlags f)
         : QDialog{parent, f}, ui{}, point{point}, blank{blank} {
     ui.setupUi(this);
 
-    ui.pointInfo->setText(point->get_researchPointTitle().c_str());
-    ui.requiredMeasurement->setChecked(point->is_requiredMeasurement());
+    ui.pointInfo->setText(point.title().c_str());
+    ui.requiredMeasurement->setChecked(point.required());
 
-    auto pointSensors = point->get_sensors();
+    const auto& pointSensors = point.sensors();
 
-    for (auto sensor: globals::db.get_sensors_pointers()) {
-        if (std::find(pointSensors.begin(), pointSensors.end(), sensor->get_sensor_ID()) == pointSensors.end()) {
-            auto* item = new ListItemWithID{sensor->get_sensor_ID(), getSensorDesc(sensor).c_str()};
+    for (const auto& [id, sensor]: globals::db.sensors()) {
+        if (std::find_if(pointSensors.begin(), pointSensors.end(), [&sensor](auto e) { return *e.lock() == *sensor; }) == pointSensors.end()) {
+            auto* item = new ListItemWithID{sensor->id(), getSensorDesc(sensor).c_str()};
             ui.allSensors->addItem(item);
         }
     }
 
-    for (auto sensorID: pointSensors) {
-        auto* sensor = globals::db.get_sensor(sensorID);
-        auto* item = new ListItemWithID{sensor->get_sensor_ID(), getSensorDesc(sensor).c_str()};
+    for (const auto& sensor: pointSensors) {
+        auto* item = new ListItemWithID{sensor.lock()->id(), getSensorDesc(sensor.lock()).c_str()};
         ui.currentSensors->addItem(item);
     }
 
@@ -46,7 +45,6 @@ EditPointDialog::EditPointDialog(ResearchPoint* point, bool blank, QWidget* pare
     connect(ui.allSensors, &QListWidget::itemSelectionChanged, this, &EditPointDialog::updateButtons);
     connect(ui.currentSensors, &QListWidget::itemSelectionChanged, this, &EditPointDialog::updateButtons);
     connect(this, &QDialog::accepted, this, &EditPointDialog::applyChanges);
-    connect(this, &QDialog::rejected, this, [this]() { if (this->blank) delete this->point; });
 }
 
 void EditPointDialog::updateButtons() {
@@ -54,9 +52,8 @@ void EditPointDialog::updateButtons() {
     ui.deleteButton->setEnabled(ui.allSensors->currentRow() >= 0 || ui.currentSensors->currentRow() >= 0);
 }
 
-void EditPointDialog::appendSensor(unsigned int id) {
-    auto* sensor = globals::db.get_sensor(id);
-    auto* item = new ListItemWithID{id, getSensorDesc(sensor).c_str()};
+void EditPointDialog::appendSensor(size_t id) {
+    auto* item = new ListItemWithID{id, getSensorDesc(globals::db.sensors().at(id)).c_str()};
     ui.allSensors->addItem(item);
     updateButtons();
 }
@@ -83,7 +80,7 @@ void EditPointDialog::deleteSensor() {
         auto* item = dynamic_cast<ListItemWithID*>(ui.allSensors->currentItem());
 
         if (item != nullptr) {
-            globals::db.delete_sensor(item->getID());
+            globals::db.deleteSensor(item->getID());
             delete ui.allSensors->takeItem(ui.allSensors->currentRow());
         }
     }
@@ -92,16 +89,16 @@ void EditPointDialog::deleteSensor() {
 }
 
 void EditPointDialog::applyChanges() {
-    std::vector<unsigned int> sensorIDs;
-    sensorIDs.reserve(ui.currentSensors->count());
+    std::vector<std::shared_ptr<Sensor>> sensors;
+    sensors.reserve(ui.currentSensors->count());
 
     for (int i = 0; i < ui.currentSensors->count(); i++) {
-        sensorIDs.push_back(dynamic_cast<ListItemWithID*>(ui.currentSensors->item(i))->getID());
+        sensors.push_back(globals::db.sensors().at(dynamic_cast<ListItemWithID*>(ui.currentSensors->item(i))->getID()));
     }
 
-    point->change_researchPointTitle(ui.pointInfo->text().toStdString());
-    point->set_required(ui.requiredMeasurement->isChecked());
-    point->set_sensors(sensorIDs);
+    point.title(ui.pointInfo->text().toStdString());
+    point.required(ui.requiredMeasurement->isChecked());
+    point.sensors(sensors);
 
     emit pointModified(point, blank);
 }

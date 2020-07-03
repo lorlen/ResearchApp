@@ -1,5 +1,5 @@
-#ifndef PROJEKT_NEWUSERDIALOG_H
-#define PROJEKT_NEWUSERDIALOG_H
+#ifndef RESEARCHAPP_NEWUSERDIALOG_H
+#define RESEARCHAPP_NEWUSERDIALOG_H
 
 
 #include "ui_newuser.h"
@@ -29,7 +29,7 @@ signals:
      * Signal fired to notify that a new user was successfully added.
      * @param id ID of the new user.
      */
-    void userAdded(unsigned int id);
+    void userAdded(size_t id);
 
 public:
     /**
@@ -41,4 +41,4 @@ public:
 };
 
 
-#endif //PROJEKT_NEWUSERDIALOG_H
+#endif //RESEARCHAPP_NEWUSERDIALOG_H

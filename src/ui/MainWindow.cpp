@@ -11,7 +11,7 @@
 #include "ui/EditPointDialog.h"
 #include "ui/ListItemWithID.h"
 #include "globals.h"
-#include "research/research.h"
+#include "research/Research.h"
 
 MainWindow::MainWindow() : mainUi{}, addUi{}, selectUi{} {
     mainUi.setupUi(this);
@@ -27,9 +27,7 @@ MainWindow::MainWindow() : mainUi{}, addUi{}, selectUi{} {
     connect(selectUi.deleteButton, &QPushButton::clicked, this, &MainWindow::deleteResearch);
     connect(selectUi.logoutButton, &QPushButton::clicked, this, &MainWindow::logout);
     connect(selectUi.checklist, &QListWidget::itemChanged, this, [this](QListWidgetItem* item) {
-        item->checkState() == Qt::Checked ? ++checkedPoints : --checkedPoints;
-        int id = tempPoints[selectUi.checklist->row(item)]->get_researchPoint_ID();
-        globals::db.set_checkbox(loadedResearch->get_research_ID(), id, item->checkState() == Qt::Checked);
+        loadedResearch->researchPoints()[selectUi.checklist->row(item)].checked(item->checkState() == Qt::Checked);
         updateProgress();
     });
 
@@ -63,101 +61,71 @@ void MainWindow::changeDate() {
 }
 
 void MainWindow::loadResearch() {
-    QDate qDate = mainUi.calendarWidget->selectedDate();
-    Date date{qDate.year(), qDate.month(), qDate.day()};
-    auto researches = globals::db.get_researchs_s_d_pointers(date);
+    auto researches = globals::db.getResearchesByStartDate(mainUi.calendarWidget->selectedDate());
 
-    Research* research = nullptr;
-    std::string title, info;
-    QDate* start = nullptr;
-    QDate* end = nullptr;
-    bool isAllowedToCheck = false;
-
-    if (!researches.empty())
-        research = researches[0];
-
-    if (blankResearch)
-        delete loadedResearch;
-
-    blankResearch = research == nullptr;
-    loadedResearch = blankResearch ? new Research{} : research;
-    checkedPoints = 0;
-    tempPoints.clear();
-
-    if (!blankResearch) {
-        Date startDate = research->get_start_date();
-        Date endDate = research->get_deadline_date();
-        title  = research->get_researchTitle();
-        info   = research->get_state();
-        start  = new QDate{startDate.year(), startDate.month(), startDate.day()};
-        end    = new QDate{endDate.year(), endDate.month(), endDate.day()};
-        tempPoints = research->get_researchPoints_sorted();
-
-        auto users = research->get_users_ID();
-        isAllowedToCheck = globals::db.is_admin()
-                || std::find(users.begin(), users.end(), globals::db.get_currently_loged()->get_id()) != users.end();
-    }
+    blankResearch = researches.empty();
+    loadedResearch = blankResearch ? std::make_shared<Research>() : researches[0];
 
     if (mainUi.stackedWidget->currentIndex() == 0) {
         selectUi.sensorButton->setEnabled(!blankResearch);
-        selectUi.addButton->setEnabled(blankResearch && globals::db.is_admin());
-        selectUi.editButton->setEnabled(!blankResearch && globals::db.is_admin());
-        selectUi.deleteButton->setEnabled(!blankResearch && globals::db.is_admin());
+        selectUi.addButton->setEnabled(blankResearch && globals::db.currentUser()->admin());
+        selectUi.editButton->setEnabled(!blankResearch && globals::db.currentUser()->admin());
+        selectUi.deleteButton->setEnabled(!blankResearch && globals::db.currentUser()->admin());
 
-        selectUi.researchTitle->setText(QString("Title: ") + title.c_str());
-        selectUi.researchInfo->setText(info.c_str());
+        selectUi.researchTitle->setText(QString("Title: ") + loadedResearch->title().c_str());
+        selectUi.researchInfo->setText(loadedResearch->info().c_str());
 
-        if (start != nullptr)
-            selectUi.startDate->setText(QString("Start date: ") + start->toString(Qt::ISODate));
-        else
-            selectUi.startDate->setText(QString("Start date: "));
-        if (end != nullptr)
-            selectUi.endDate->setText(QString("End date: ") + end->toString(Qt::ISODate));
-        else
-            selectUi.endDate->setText(QString("End date: "));
+        if (!blankResearch) {
+            selectUi.startDate->setText(QString("Start date: ") + loadedResearch->startDate().toISOString().c_str());
+            selectUi.endDate->setText(QString("End date: ") + loadedResearch->endDate().toISOString().c_str());
+        }
+        else {
+            selectUi.startDate->setText(QString("Start date:"));
+            selectUi.endDate->setText(QString("End date:"));
+        }
+
+        bool isAllowedToCheck = globals::db.currentUser()->admin() ||
+                                loadedResearch->isAssignedTo(globals::db.currentUser());
 
         selectUi.checklist->clear();
 
-        for (auto point: tempPoints) {
+        for (const auto& point: loadedResearch->researchPoints()) {
             auto* item = new QListWidgetItem{};
-            item->setText(point->get_researchPointTitle().c_str());
+            item->setText(point.title().c_str());
             item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
             if (!isAllowedToCheck)
                 item->setFlags(item->flags() & ~Qt::ItemIsEnabled);
-            item->setCheckState(point->is_checked() ? Qt::Checked : Qt::Unchecked);
+            item->setCheckState(point.checked() ? Qt::Checked : Qt::Unchecked);
             selectUi.checklist->addItem(item);
-            checkedPoints += point->is_checked();
         }
 
         updateProgress();
     }
     else {
-        addUi.researchTitle->setText(title.c_str());
-        addUi.researchInfo->setText(info.c_str());
-        if (start != nullptr)
-            addUi.startDate->setDate(*start);
-        else
+        addUi.researchTitle->setText(loadedResearch->title().c_str());
+        addUi.researchInfo->setText(loadedResearch->title().c_str());
+
+        if (!blankResearch) {
+            addUi.startDate->setDate(loadedResearch->startDate());
+            addUi.endDate->setDate(loadedResearch->endDate());
+        }
+        else {
             addUi.startDate->setDate(mainUi.calendarWidget->selectedDate());
-        if (end != nullptr)
-            addUi.endDate->setDate(*end);
-        else
             addUi.endDate->setDate(QDate::currentDate());
+        }
 
         addUi.checklist->clear();
 
-        for (auto point: tempPoints) {
+        for (const auto& point: loadedResearch->researchPoints()) {
             auto* item = new QListWidgetItem{};
-            item->setText(point->get_researchPointTitle().c_str());
+            item->setText(point.title().c_str());
             item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-            item->setCheckState(point->is_checked() ? Qt::Checked : Qt::Unchecked);
+            item->setCheckState(point.checked() ? Qt::Checked : Qt::Unchecked);
             addUi.checklist->addItem(item);
         }
 
         updateButtons();
     }
-
-    delete start;
-    delete end;
 }
 
 void MainWindow::showSensors() {
@@ -167,7 +135,7 @@ void MainWindow::showSensors() {
 }
 
 void MainWindow::logout() {
-    globals::db.log_out();
+    globals::db.logOut();
     auto* loginWindow = new LoginWindow{};
     loginWindow->setAttribute(Qt::WA_DeleteOnClose);
     loginWindow->show();
@@ -175,12 +143,14 @@ void MainWindow::logout() {
 }
 
 void MainWindow::updateProgress() {
-    selectUi.researchProgress->setValue((int) std::round(100 * checkedPoints / ((double) tempPoints.size())));
+    int progress = loadedResearch->researchPoints().empty() ? 0 :
+                   (int) std::round(100. * loadedResearch->countCheckedPoints() / loadedResearch->researchPoints().size());
+    selectUi.researchProgress->setValue(progress);
 }
 
 void MainWindow::deleteResearch() {
     if (!blankResearch) {
-        globals::db.remove_research(loadedResearch->get_research_ID());
+        globals::db.deleteResearch(loadedResearch->id());
         loadResearch();
     }
 }
@@ -191,31 +161,31 @@ void MainWindow::updateButtons() {
 }
 
 void MainWindow::manageResearchers() {
-    loadedResearch->change_researchTitle(addUi.researchTitle->text().toStdString());
+    loadedResearch->title(addUi.researchTitle->text().toStdString());
     auto* editResearchersDialog = new EditResearchersDialog{loadedResearch, this};
     editResearchersDialog->setAttribute(Qt::WA_DeleteOnClose);
     editResearchersDialog->show();
 }
 
-void MainWindow::appendPoint(ResearchPoint* point, bool blank) {
+void MainWindow::appendPoint(const ResearchPoint& point, bool blank) {
     if (blank) {
-        auto* item = new QListWidgetItem{point->get_researchPointTitle().c_str()};
+        auto* item = new QListWidgetItem{point.title().c_str()};
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
         item->setCheckState(Qt::Unchecked);
-        point->set_researchPoint_ID(globals::db.get_next_point_id());
-        tempPoints.push_back(point);
+        loadedResearch->addResearchPoint(point);
         addUi.checklist->addItem(item);
     }
     else {
-        addUi.checklist->currentItem()->setText(point->get_researchPointTitle().c_str());
-        tempPoints[addUi.checklist->currentRow()] = point;
+        addUi.checklist->currentItem()->setText(point.title().c_str());
+        loadedResearch->researchPoints()[addUi.checklist->currentRow()] = point;
     }
 
     updateButtons();
 }
 
 void MainWindow::newPoint() {
-    auto* editPointDialog = new EditPointDialog{new ResearchPoint{}, true, this};
+    tempPoint = ResearchPoint();
+    auto* editPointDialog = new EditPointDialog{tempPoint, true, this};
     connect(editPointDialog, &EditPointDialog::pointModified, this, &MainWindow::appendPoint);
     editPointDialog->setAttribute(Qt::WA_DeleteOnClose);
     editPointDialog->show();
@@ -223,7 +193,7 @@ void MainWindow::newPoint() {
 
 void MainWindow::editPoint() {
     if (addUi.checklist->currentRow() >= 0) {
-        auto* point = tempPoints[addUi.checklist->currentRow()];
+        auto& point = loadedResearch->researchPoints()[addUi.checklist->currentRow()];
         auto* editPointDialog = new EditPointDialog{point, false, this};
         connect(editPointDialog, &EditPointDialog::pointModified, this, &MainWindow::appendPoint);
         editPointDialog->setAttribute(Qt::WA_DeleteOnClose);
@@ -233,7 +203,7 @@ void MainWindow::editPoint() {
 
 void MainWindow::deletePoint() {
     if (addUi.checklist->currentRow() >= 0) {
-        tempPoints.erase(tempPoints.begin() + addUi.checklist->currentRow());
+        globals::db.deleteResearchPoint(loadedResearch, addUi.checklist->currentRow());
         delete addUi.checklist->takeItem(addUi.checklist->currentRow());
 
         updateButtons();
@@ -241,31 +211,22 @@ void MainWindow::deletePoint() {
 }
 
 void MainWindow::applyChanges() {
-    QDate start = addUi.startDate->date();
-    QDate end = addUi.endDate->date();
-
-    for (size_t i = 0; i < tempPoints.size(); i++) {
-        tempPoints[i]->set_order(i);
-        tempPoints[i]->set_checked(addUi.checklist->item(i)->checkState() == Qt::Checked);
+    for (size_t i = 0; i < loadedResearch->researchPoints().size(); i++) {
+        loadedResearch->researchPoints()[i].checked(addUi.checklist->item((int) i)->checkState() == Qt::Checked);
     }
 
-    loadedResearch->change_researchTitle(addUi.researchTitle->text().toStdString());
-    loadedResearch->set_s_date(Date{start.year(), start.month(), start.day()});
-    loadedResearch->set_d_date(Date{end.year(), end.month(), end.day()});
-    loadedResearch->set_state(addUi.researchInfo->toPlainText().toStdString());
-    loadedResearch->set_researchPoints(tempPoints);
-    loadedResearch->set_author(globals::db.get_currently_loged()->get_id());
+    loadedResearch->title(addUi.researchTitle->text().toStdString());
+    loadedResearch->startDate(addUi.startDate->date());
+    loadedResearch->endDate(addUi.endDate->date());
+    loadedResearch->info(addUi.researchInfo->toPlainText().toStdString());
 
     if (blankResearch) {
         // note: we don't support multiple researches with the same start date
-        for (const auto& research: globals::db.get_researchs_s_d(Date{start.year(), start.month(), start.day()})) {
-            globals::db.remove_research(research.first);
+        for (const auto& research: globals::db.getResearchesByStartDate(addUi.startDate->date())) {
+            globals::db.deleteResearch(research);
         }
 
-        globals::db.add_research(loadedResearch);
-    }
-    else {
-        globals::db.modify_research(loadedResearch->get_research_ID(), loadedResearch);
+        globals::db.addResearch(*loadedResearch);
     }
 
     blankResearch = false;

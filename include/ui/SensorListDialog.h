@@ -1,10 +1,10 @@
-#ifndef PROJEKT_SENSORLISTDIALOG_H
-#define PROJEKT_SENSORLISTDIALOG_H
+#ifndef RESEARCHAPP_SENSORLISTDIALOG_H
+#define RESEARCHAPP_SENSORLISTDIALOG_H
 
 
 #include <QtWidgets/QDialog>
 #include "ui/ui_sensorlist.h"
-#include "research/research.h"
+#include "research/Research.h"
 
 /**
  * A dialog used to view sensors used in the selected research.
@@ -19,8 +19,8 @@ public:
      * @param parent see Qt docs.
      * @param f see Qt docs.
      */
-    explicit SensorListDialog(Research* research, QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+    explicit SensorListDialog(const std::shared_ptr<Research>& research, QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 };
 
 
-#endif //PROJEKT_SENSORLISTDIALOG_H
+#endif //RESEARCHAPP_SENSORLISTDIALOG_H

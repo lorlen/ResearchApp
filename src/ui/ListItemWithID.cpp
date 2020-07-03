@@ -1,12 +1,12 @@
 #include "ui/ListItemWithID.h"
 
-ListItemWithID::ListItemWithID(unsigned int id, const QString& text, QListWidget* parent, int type)
+ListItemWithID::ListItemWithID(size_t id, const QString& text, QListWidget* parent, int type)
         : QListWidgetItem{text, parent, type}, id{id} {}
 
-unsigned int ListItemWithID::getID() {
+size_t ListItemWithID::getID() const {
     return id;
 }
 
-void ListItemWithID::setID(unsigned int id) {
+void ListItemWithID::setID(size_t id) {
     this->id = id;
 }

@@ -1,14 +1,15 @@
-include_directories(${projekt_SOURCE_DIR}/include)
+include_directories(${ResearchApp_SOURCE_DIR}/include)
 
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og -Wall -Wextra -D_Debug")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og -Wall -Wextra")
 
 find_package(Qt5Core)
 find_package(Qt5Widgets)
 
-add_executable(projekt
+add_executable(ResearchApp
         main.cpp
         globals.cpp
+
         ui/LoginWindow.cpp
         ui/MainWindow.cpp
         ui/NewSensorDialog.cpp
@@ -17,18 +18,18 @@ add_executable(projekt
         ui/SensorListDialog.cpp
         ui/ListItemWithID.cpp
         ui/NewUserDialog.cpp
-        db/database.cpp
-        db/user.cpp
-        db/sha256.cpp
-        db/cipher.cpp
-        db/exceptions.cpp
-        research/date.cpp
-        research/research.cpp
-        research/researchpoint.cpp
-        research/sensor.cpp
+
+        db/Database.cpp
+
+        research/Date.cpp
+        research/Research.cpp
+        research/ResearchPoint.cpp
+        research/Sensor.cpp
+        research/User.cpp
+
         ../include/ui/NewSensorDialog.h
         ../include/ui/EditPointDialog.h
-        ../include/ui/NewUserDialog.h)
+        ../include/ui/NewUserDialog.h ../include/db/Record.h)
 
-target_link_libraries(projekt Qt5::Core)
-target_link_libraries(projekt Qt5::Widgets)
+target_link_libraries(ResearchApp Qt5::Core)
+target_link_libraries(ResearchApp Qt5::Widgets)

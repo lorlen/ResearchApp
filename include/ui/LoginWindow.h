@@ -1,5 +1,5 @@
-#ifndef PROJEKT_LOGINWINDOW_H
-#define PROJEKT_LOGINWINDOW_H
+#ifndef RESEARCHAPP_LOGINWINDOW_H
+#define RESEARCHAPP_LOGINWINDOW_H
 
 
 #include <QtWidgets/QWidget>
@@ -21,4 +21,4 @@ public:
 };
 
 
-#endif //PROJEKT_LOGINWINDOW_H
+#endif //RESEARCHAPP_LOGINWINDOW_H

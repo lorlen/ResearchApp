@@ -1,5 +1,5 @@
-#ifndef PROJEKT_LISTITEMWITHID_H
-#define PROJEKT_LISTITEMWITHID_H
+#ifndef RESEARCHAPP_LISTITEMWITHID_H
+#define RESEARCHAPP_LISTITEMWITHID_H
 
 
 #include <QtWidgets/QListWidgetItem>
@@ -9,7 +9,7 @@
  * an ID of an associated object.
  */
 class ListItemWithID: public QListWidgetItem {
-    unsigned int id;
+    size_t id;
 
 public:
     ListItemWithID() = default;
@@ -20,17 +20,17 @@ public:
      * @param parent see Qt docs.
      * @param type see Qt docs.
      */
-    ListItemWithID(unsigned int id, const QString& text, QListWidget* parent = nullptr, int type = Type);
+    ListItemWithID(size_t id, const QString& text, QListWidget* parent = nullptr, int type = Type);
     /**
      * @return the ID of an associated object.
      */
-    unsigned int getID();
+    size_t getID() const;
     /**
      * Sets the ID of an associated object.
      * @param id ID to set.
      */
-    void setID(unsigned int id);
+    void setID(size_t id);
 };
 
 
-#endif //PROJEKT_LISTITEMWITHID_H
+#endif //RESEARCHAPP_LISTITEMWITHID_H

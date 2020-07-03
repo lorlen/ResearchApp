@@ -1,5 +1,5 @@
-#ifndef PROJEKT_MAINWINDOW_H
-#define PROJEKT_MAINWINDOW_H
+#ifndef RESEARCHAPP_MAINWINDOW_H
+#define RESEARCHAPP_MAINWINDOW_H
 
 
 #include <vector>
@@ -7,7 +7,7 @@
 #include "ui/ui_main.h"
 #include "ui/ui_addresearch.h"
 #include "ui/ui_selectresearch.h"
-#include "research/research.h"
+#include "research/Research.h"
 
 /**
  * Main window of the application. It has two modes: select mode and add mode.
@@ -20,10 +20,9 @@ private:
     Ui::Main mainUi;
     Ui::AddResearch addUi;
     Ui::SelectResearch selectUi;
-    Research* loadedResearch = nullptr;
-    std::vector<ResearchPoint*> tempPoints;
-    int checkedPoints = 0;
+    std::shared_ptr<Research> loadedResearch = nullptr;
     bool blankResearch = true;
+    ResearchPoint tempPoint;
 
 private slots:
     void toggleDisplayedPage();
@@ -37,7 +36,7 @@ private slots:
 
     void updateButtons();
     void manageResearchers();
-    void appendPoint(ResearchPoint* point, bool blank);
+    void appendPoint(const ResearchPoint& point, bool blank);
     void newPoint();
     void editPoint();
     void deletePoint();
@@ -48,4 +47,4 @@ public:
 };
 
 
-#endif //PROJEKT_MAINWINDOW_H
+#endif //RESEARCHAPP_MAINWINDOW_H

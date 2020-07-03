@@ -9,11 +9,11 @@ NewSensorDialog::NewSensorDialog(QWidget* parent, Qt::WindowFlags f)
 }
 
 void NewSensorDialog::applyChanges() {
-    int id = globals::db.add_sensor(
+    Sensor sensor(
             ui.sensorLabel->text().toStdString(),
             ui.sensorType->text().toStdString(),
             ui.sensorUnit->text().toStdString()
     );
 
-    emit sensorAdded(id);
+    emit sensorAdded(globals::db.addSensor(sensor));
 }

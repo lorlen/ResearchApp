@@ -1,35 +1,23 @@
-#include <string>
+#ifndef RESEARCHAPP_EXCEPTIONS_H
+#define RESEARCHAPP_EXCEPTIONS_H
 
-class DatabaseReadProblem
-{
-    public:
-    std::string f;
-    std::string m;
-    std::string what();
-    DatabaseReadProblem(std::string filename);
-    DatabaseReadProblem(std::string filename, std::string msg);
-    ~DatabaseReadProblem();
+
+#include <stdexcept>
+
+class DatabaseException: public std::runtime_error {
+    using std::runtime_error::runtime_error;
 };
 
-class UserNotLogged
-{
-    public:
-    std::string w;
-    std::string m;
-    std::string what();
-    UserNotLogged(std::string what);
-    UserNotLogged(std::string what, std::string msg);
-    ~UserNotLogged();
+class UserNotFoundException: public DatabaseException {
+    using DatabaseException::DatabaseException;
 };
 
-
-class UserNotFound
-{
-    public:
-    int id;
-    std::string m;
-    std::string what();
-    UserNotFound(int id);
-    UserNotFound(int id, std::string msg);
-    ~UserNotFound();
+class NotLoggedInException: public DatabaseException {
+    using DatabaseException::DatabaseException;
 };
+
+class InsufficientPrivilegesException: public DatabaseException {
+    using DatabaseException::DatabaseException;
+};
+
+#endif //RESEARCHAPP_EXCEPTIONS_H
