@@ -2,6 +2,7 @@ include_directories(${ResearchApp_SOURCE_DIR}/include)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og -Wall -Wextra")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
 
 find_package(Qt5Core)
 find_package(Qt5Widgets)
@@ -16,7 +17,6 @@ add_executable(ResearchApp
         ui/EditPointDialog.cpp
         ui/EditResearchersDialog.cpp
         ui/SensorListDialog.cpp
-        ui/ListItemWithID.cpp
         ui/NewUserDialog.cpp
 
         db/Database.cpp

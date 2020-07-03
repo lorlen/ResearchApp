@@ -74,6 +74,8 @@ void NewUserDialog::accept() {
             ui.isAdmin->isChecked()
     );
 
-    emit userAdded(globals::db.addUser(user));
+    globals::db.addUser(user);
+
+    emit userAdded(user.login());
     close();
 }

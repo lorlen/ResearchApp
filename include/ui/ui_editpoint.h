@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'editpoint.ui'
 **
-** Created by: Qt User Interface Compiler version 5.14.2
+** Created by: Qt User Interface Compiler version 5.15.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -98,6 +98,12 @@ public:
 
         gridLayout->addWidget(buttonBox, 5, 0, 1, 4);
 
+        QWidget::setTabOrder(pointInfo, requiredMeasurement);
+        QWidget::setTabOrder(requiredMeasurement, newButton);
+        QWidget::setTabOrder(newButton, addButton);
+        QWidget::setTabOrder(addButton, deleteButton);
+        QWidget::setTabOrder(deleteButton, allSensors);
+        QWidget::setTabOrder(allSensors, currentSensors);
 
         retranslateUi(EditResearchPoint);
         QObject::connect(buttonBox, SIGNAL(accepted()), EditResearchPoint, SLOT(accept()));

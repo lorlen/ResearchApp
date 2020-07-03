@@ -4,12 +4,16 @@
 
 class Database;
 
+template<typename T>
 class Record {
 protected:
-    size_t m_id{};
+    T m_id{};
+
+    Record() = default;
+    explicit Record(T id) : m_id(std::move(id)) {}
 
 public:
-    size_t id() const {
+    T id() const {
         return m_id;
     }
 

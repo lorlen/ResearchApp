@@ -99,7 +99,7 @@ void Research::addResearchPoint(const ResearchPoint& point) {
 }
 
 void to_json(json& j, const Research& research) {
-    std::vector<size_t> assigned;
+    std::vector<std::string> assigned;
     assigned.reserve(research.m_assigned.size());
     std::transform(research.m_assigned.begin(), research.m_assigned.end(), std::back_inserter(assigned),
             [](auto user) { return user.lock()->id(); });

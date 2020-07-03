@@ -83,6 +83,15 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>pointInfo</tabstop>
+  <tabstop>requiredMeasurement</tabstop>
+  <tabstop>newButton</tabstop>
+  <tabstop>addButton</tabstop>
+  <tabstop>deleteButton</tabstop>
+  <tabstop>allSensors</tabstop>
+  <tabstop>currentSensors</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

@@ -41,7 +41,11 @@
     </spacer>
    </item>
    <item row="0" column="0" colspan="2">
-    <widget class="QListWidget" name="sensorList"/>
+    <widget class="QListWidget" name="sensorList">
+     <property name="focusPolicy">
+      <enum>Qt::NoFocus</enum>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

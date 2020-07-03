@@ -8,7 +8,7 @@
 
 using nlohmann::json;
 
-class Sensor: public Record {
+class Sensor: public Record<size_t> {
     std::string m_label, m_type, m_unit;
 
 public:

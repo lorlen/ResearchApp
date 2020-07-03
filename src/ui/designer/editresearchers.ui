@@ -73,6 +73,13 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>newUserButton</tabstop>
+  <tabstop>addButton</tabstop>
+  <tabstop>deleteButton</tabstop>
+  <tabstop>allResearchers</tabstop>
+  <tabstop>currentResearchers</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

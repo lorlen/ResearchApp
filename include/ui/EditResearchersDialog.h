@@ -16,7 +16,7 @@ private:
 
 private slots:
     void updateButtons();
-    void appendUser(unsigned int id);
+    void appendUser(std::string login);
     void newUser();
     void addResearcher();
     void deleteResearcher();

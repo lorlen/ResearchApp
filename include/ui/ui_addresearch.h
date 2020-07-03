@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'addresearch.ui'
 **
-** Created by: Qt User Interface Compiler version 5.14.2
+** Created by: Qt User Interface Compiler version 5.15.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -150,6 +150,16 @@ public:
 
         verticalLayout->addLayout(gridLayout);
 
+        QWidget::setTabOrder(researchTitle, startDate);
+        QWidget::setTabOrder(startDate, endDate);
+        QWidget::setTabOrder(endDate, researchInfo);
+        QWidget::setTabOrder(researchInfo, editResearchersButton);
+        QWidget::setTabOrder(editResearchersButton, newPointButton);
+        QWidget::setTabOrder(newPointButton, editPointButton);
+        QWidget::setTabOrder(editPointButton, deletePointButton);
+        QWidget::setTabOrder(deletePointButton, checklist);
+        QWidget::setTabOrder(checklist, okButton);
+        QWidget::setTabOrder(okButton, cancelButton);
 
         retranslateUi(AddResearch);
 

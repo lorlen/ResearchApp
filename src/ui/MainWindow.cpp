@@ -9,7 +9,6 @@
 #include "ui/SensorListDialog.h"
 #include "ui/EditResearchersDialog.h"
 #include "ui/EditPointDialog.h"
-#include "ui/ListItemWithID.h"
 #include "globals.h"
 #include "research/Research.h"
 

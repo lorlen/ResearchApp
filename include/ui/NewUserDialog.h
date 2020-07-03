@@ -29,7 +29,7 @@ signals:
      * Signal fired to notify that a new user was successfully added.
      * @param id ID of the new user.
      */
-    void userAdded(size_t id);
+    void userAdded(std::string login);
 
 public:
     /**

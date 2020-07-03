@@ -9,8 +9,8 @@
 
 using nlohmann::json;
 
-class User: public Record {
-    std::string m_login, m_displayName, m_passwdHash, m_passwdSalt;
+class User: public Record<std::string> {
+    std::string m_displayName, m_passwdHash, m_passwdSalt;
     bool m_admin{};
 
     std::string hashPassword(const std::string& password) const;

@@ -6,7 +6,8 @@
 
 using nlohmann::json;
 
-Database::Database() {
+Database::Database(std::string rPath, std::string uPath, std::string sPath)
+        : researchesPath(rPath), usersPath(uPath), sensorsPath(sPath) {
     std::ifstream researchesFile(researchesPath), usersFile(usersPath), sensorsFile(sensorsPath);
 
     json researchesJSON, usersJSON, sensorsJSON;
@@ -15,8 +16,7 @@ Database::Database() {
         std::ofstream researchesFile(researchesPath), usersFile(usersPath), sensorsFile(sensorsPath);
 
         auto admin = std::make_shared<User>("admin", "admin", "admin", true);
-        admin->m_id = usersNextID;
-        m_users.emplace(usersNextID, admin);
+        m_users.emplace(admin->m_id, admin);
 
         researchesJSON = {
                 {"next_id", researchesNextID},
@@ -24,9 +24,8 @@ Database::Database() {
         };
 
         usersJSON = {
-                {"next_id", ++usersNextID},
                 {"users", {
-                    {std::to_string(usersNextID - 1), *admin}
+                    {admin->m_id, *admin}
                 }}
         };
 
@@ -45,7 +44,6 @@ Database::Database() {
         sensorsFile >> sensorsJSON;
 
         researchesNextID = researchesJSON.at("next_id").get<size_t>();
-        usersNextID = usersJSON.at("next_id").get<size_t>();
         sensorsNextID = sensorsJSON.at("next_id").get<size_t>();
     }
 
@@ -57,17 +55,17 @@ Database::Database() {
 
     for (const auto& [id, val]: usersJSON.at("users").items()) {
         auto user = std::make_shared<User>(val.get<User>());
-        user->m_id = std::stoull(id);
-        m_users.emplace(std::stoull(id), user);
+        user->m_id = id;
+        m_users.emplace(id, user);
     }
 
     for (const auto& [id, val]: researchesJSON.at("researches").items()) {
         auto res = std::make_shared<Research>(val.get<Research>());
         res->m_id = std::stoull(id);
 
-        res->author(m_users.at(val.at("author").get<size_t>()));
+        res->author(m_users.at(val.at("author").get<std::string>()));
 
-        for (auto user_id : val.at("assigned").get<std::vector<size_t>>()) {
+        for (auto user_id : val.at("assigned").get<std::vector<std::string>>()) {
             res->assignUser(m_users.at(user_id));
         }
 
@@ -94,7 +92,6 @@ Database::~Database() {
     };
 
     usersJSON = {
-            {"next_id", usersNextID},
             {"users", json::object()}
     };
 
@@ -107,8 +104,8 @@ Database::~Database() {
         researchesJSON.at("researches").emplace(std::to_string(id), *val);
     }
 
-    for (const auto& [id, val]: m_users) {
-        usersJSON.at("users").emplace(std::to_string(id), *val);
+    for (const auto& [login, val]: m_users) {
+        usersJSON.at("users").emplace(login, *val);
     }
 
     for (const auto& [id, val]: m_sensors) {
@@ -133,9 +130,7 @@ inline void Database::checkAdmin() const {
 }
 
 void Database::logIn(const std::string& login, const std::string& password) const {
-    auto user_iter = std::find_if(m_users.begin(), m_users.end(), [login](const auto& user) {
-        return user.second->login() == login;
-    });
+    auto user_iter = m_users.find(login);
 
     if (user_iter == m_users.end() || !(user_iter->second->verifyPassword(password))) {
         throw UserNotFoundException("");
@@ -152,12 +147,12 @@ std::shared_ptr<User> Database::currentUser() const {
     return m_currentUser;
 }
 
-const std::map<size_t, std::shared_ptr<Research>>& Database::researches() const {
+const std::unordered_map<size_t, std::shared_ptr<Research>>& Database::researches() const {
     checkUser();
     return m_researches;
 }
 
-const std::map<size_t, std::shared_ptr<User>>& Database::users() const {
+const std::map<std::string, std::shared_ptr<User>>& Database::users() const {
     checkUser();
     return m_users;
 }
@@ -180,23 +175,12 @@ std::vector<std::shared_ptr<const Research>> Database::getResearchesByStartDate(
     return result;
 }
 
-std::shared_ptr<const User> Database::getUserByLogin(const std::string& login) const {
-    checkUser();
-
-    for (const auto& [id, val]: m_users) {
-        if (val->login() == login) {
-            return val;
-        }
-    }
-    throw UserNotFoundException(login);
-}
-
-std::map<size_t, std::shared_ptr<Research>>& Database::researches() {
+std::unordered_map<size_t, std::shared_ptr<Research>>& Database::researches() {
     checkUser();
     return m_researches;
 }
 
-std::map<size_t, std::shared_ptr<User>>& Database::users() {
+std::map<std::string, std::shared_ptr<User>>& Database::users() {
     checkAdmin();
     return m_users;
 }
@@ -219,16 +203,6 @@ std::vector<std::shared_ptr<Research>> Database::getResearchesByStartDate(const 
     return result;
 }
 
-std::shared_ptr<User> Database::getUserByLogin(const std::string& login) {
-    checkAdmin();
-    for (const auto& [id, val]: m_users) {
-        if (val->login() == login) {
-            return val;
-        }
-    }
-    throw UserNotFoundException(login);
-}
-
 size_t Database::addResearch(const Research& research) {
     checkAdmin();
     auto rptr = std::make_shared<Research>(research);
@@ -239,26 +213,16 @@ size_t Database::addResearch(const Research& research) {
     return researchesNextID++;
 }
 
-size_t Database::addResearchPoint(size_t researchID, const ResearchPoint& point) {
+size_t Database::addResearchPoint(const std::shared_ptr<Research>& research, const ResearchPoint& point) {
     checkAdmin();
-    auto& points = m_researches.at(researchID)->researchPoints();
+    auto& points = research->researchPoints();
     points.push_back(point);
     return points.size() - 1;
 }
 
-size_t Database::addUser(const User& user) {
+bool Database::addUser(const User& user) {
     checkAdmin();
-
-    for (const auto& [id, val]: m_users) {
-        if (val->login() == user.login()) {
-            throw DatabaseException("User with login \"" + user.login() + "\" is already registered");
-        }
-    }
-
-    auto uptr = std::make_shared<User>(user);
-    uptr->m_id = usersNextID;
-    m_users.emplace(usersNextID, uptr);
-    return usersNextID++;
+    return m_users.emplace(user.m_id, std::make_shared<User>(user)).second;
 }
 
 size_t Database::addSensor(const Sensor& sensor) {
@@ -269,34 +233,23 @@ size_t Database::addSensor(const Sensor& sensor) {
     return sensorsNextID++;
 }
 
-void Database::deleteResearch(std::shared_ptr<Research> research) {
+void Database::deleteResearch(const std::shared_ptr<Research>& research) {
     checkAdmin();
     m_researches.erase(research->m_id);
 }
 
-void Database::deleteResearchPoint(std::shared_ptr<Research> research, size_t researchPointIndex) {
+void Database::deleteResearchPoint(const std::shared_ptr<Research>& research, size_t researchPointIndex) {
     checkAdmin();
     auto& points = research->researchPoints();
     points.erase(points.begin() + researchPointIndex);
 }
 
-void Database::deleteUser(std::shared_ptr<User> user) {
+void Database::deleteUser(const std::shared_ptr<User>& user) {
     checkAdmin();
     m_users.erase(user->m_id);
 }
 
-void Database::deleteUser(const std::string& login) {
-    checkAdmin();
-
-    for (const auto& [id, val]: m_users) {
-        if (val->login() == login) {
-            m_users.erase(id);
-            return;
-        }
-    }
-}
-
-void Database::deleteSensor(std::shared_ptr<Sensor> sensor) {
+void Database::deleteSensor(const std::shared_ptr<Sensor>& sensor) {
     checkAdmin();
     m_sensors.erase(sensor->m_id);
 }
@@ -312,9 +265,9 @@ void Database::deleteResearchPoint(size_t researchID, size_t researchPointIndex)
     points.erase(points.begin() + researchPointIndex);
 }
 
-void Database::deleteUser(size_t id) {
+void Database::deleteUser(const std::string& login) {
     checkAdmin();
-    m_users.erase(id);
+    m_users.erase(login);
 }
 
 void Database::deleteSensor(size_t id) {

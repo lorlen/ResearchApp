@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'editresearchers.ui'
 **
-** Created by: Qt User Interface Compiler version 5.14.2
+** Created by: Qt User Interface Compiler version 5.15.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -88,6 +88,10 @@ public:
         gridLayout->setColumnStretch(1, 1);
         gridLayout->setColumnStretch(2, 1);
         gridLayout->setColumnStretch(3, 1);
+        QWidget::setTabOrder(newUserButton, addButton);
+        QWidget::setTabOrder(addButton, deleteButton);
+        QWidget::setTabOrder(deleteButton, allResearchers);
+        QWidget::setTabOrder(allResearchers, currentResearchers);
 
         retranslateUi(EditResearchers);
         QObject::connect(buttonBox, SIGNAL(accepted()), EditResearchers, SLOT(accept()));

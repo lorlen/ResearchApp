@@ -75,7 +75,11 @@
       </widget>
      </item>
      <item row="3" column="0" colspan="5">
-      <widget class="QTextBrowser" name="researchInfo"/>
+      <widget class="QTextBrowser" name="researchInfo">
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
+      </widget>
      </item>
      <item row="2" column="0">
       <widget class="QLabel" name="label_3">
@@ -123,6 +127,14 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>sensorButton</tabstop>
+  <tabstop>checklist</tabstop>
+  <tabstop>addButton</tabstop>
+  <tabstop>editButton</tabstop>
+  <tabstop>deleteButton</tabstop>
+  <tabstop>logoutButton</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

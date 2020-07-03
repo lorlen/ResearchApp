@@ -6,7 +6,7 @@
 #include "external/picosha2.h"
 
 User::User(std::string login, std::string displayName, const std::string& password, bool isAdmin)
-        : m_login(std::move(login)), m_displayName(std::move(displayName)), m_admin(isAdmin) {
+        : Record(std::move(login)), m_displayName(std::move(displayName)), m_admin(isAdmin) {
     auto gen = std::mt19937_64(std::random_device()());
     std::ostringstream stream;
     stream << std::setfill('0') << std::setw(sizeof(uint64_t) * 2) << std::hex << gen();
@@ -19,7 +19,7 @@ std::string User::hashPassword(const std::string& password) const {
 }
 
 const std::string& User::login() const {
-    return m_login;
+    return m_id;
 }
 
 const std::string& User::displayName() const {
@@ -35,7 +35,7 @@ bool User::admin() const {
 }
 
 void User::login(std::string newLogin) {
-    m_login = std::move(newLogin);
+    m_id = std::move(newLogin);
 }
 
 void User::displayName(std::string newDisplayName) {
@@ -52,7 +52,7 @@ void User::admin(bool isAdmin) {
 
 void to_json(json& j, const User& user) {
     j = json {
-            {"login", user.m_login},
+            {"login", user.m_id},
             {"display_name", user.m_displayName},
             {"password_hash", user.m_passwdHash},
             {"password_salt", user.m_passwdSalt},
@@ -61,7 +61,7 @@ void to_json(json& j, const User& user) {
 }
 
 void from_json(const json& j, User& user) {
-    j.at("login").get_to(user.m_login);
+    j.at("login").get_to(user.m_id);
     j.at("display_name").get_to(user.m_displayName);
     j.at("password_hash").get_to(user.m_passwdHash);
     j.at("password_salt").get_to(user.m_passwdSalt);

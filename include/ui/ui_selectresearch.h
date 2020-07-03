@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'selectresearch.ui'
 **
-** Created by: Qt User Interface Compiler version 5.14.2
+** Created by: Qt User Interface Compiler version 5.15.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -96,6 +96,7 @@ public:
 
         researchInfo = new QTextBrowser(SelectResearch);
         researchInfo->setObjectName(QString::fromUtf8("researchInfo"));
+        researchInfo->setFocusPolicy(Qt::NoFocus);
 
         gridLayout->addWidget(researchInfo, 3, 0, 1, 5);
 
@@ -137,6 +138,11 @@ public:
 
         verticalLayout->addLayout(gridLayout);
 
+        QWidget::setTabOrder(sensorButton, checklist);
+        QWidget::setTabOrder(checklist, addButton);
+        QWidget::setTabOrder(addButton, editButton);
+        QWidget::setTabOrder(editButton, deleteButton);
+        QWidget::setTabOrder(deleteButton, logoutButton);
 
         retranslateUi(SelectResearch);
 

@@ -12,7 +12,7 @@
 
 using nlohmann::json;
 
-class Research: public Record {
+class Research: public Record<size_t> {
     std::string m_title;
     Date m_startDate;
     Date m_endDate;

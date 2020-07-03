@@ -4,7 +4,7 @@
 
 #include "ui/EditPointDialog.h"
 #include "ui/NewSensorDialog.h"
-#include "ui/ListItemWithID.h"
+#include "ui/ListItemWithData.h"
 #include "globals.h"
 
 static std::string getSensorDesc(std::shared_ptr<Sensor> sensor) {
@@ -24,13 +24,13 @@ EditPointDialog::EditPointDialog(ResearchPoint& point, bool blank, QWidget* pare
 
     for (const auto& [id, sensor]: globals::db.sensors()) {
         if (std::find_if(pointSensors.begin(), pointSensors.end(), [&sensor](auto e) { return *e.lock() == *sensor; }) == pointSensors.end()) {
-            auto* item = new ListItemWithID{sensor->id(), getSensorDesc(sensor).c_str()};
+            auto* item = new ListItemWithData<size_t>{sensor->id(), getSensorDesc(sensor).c_str()};
             ui.allSensors->addItem(item);
         }
     }
 
     for (const auto& sensor: pointSensors) {
-        auto* item = new ListItemWithID{sensor.lock()->id(), getSensorDesc(sensor.lock()).c_str()};
+        auto* item = new ListItemWithData<size_t>{sensor.lock()->id(), getSensorDesc(sensor.lock()).c_str()};
         ui.currentSensors->addItem(item);
     }
 
@@ -43,7 +43,9 @@ EditPointDialog::EditPointDialog(ResearchPoint& point, bool blank, QWidget* pare
     connect(ui.addButton, &QPushButton::clicked, this, &EditPointDialog::addSensor);
     connect(ui.deleteButton, &QPushButton::clicked, this, &EditPointDialog::deleteSensor);
     connect(ui.allSensors, &QListWidget::itemSelectionChanged, this, &EditPointDialog::updateButtons);
+    connect(ui.allSensors, &QListWidget::itemDoubleClicked, this, &EditPointDialog::addSensor);
     connect(ui.currentSensors, &QListWidget::itemSelectionChanged, this, &EditPointDialog::updateButtons);
+    connect(ui.currentSensors, &QListWidget::itemDoubleClicked, this, &EditPointDialog::deleteSensor);
     connect(this, &QDialog::accepted, this, &EditPointDialog::applyChanges);
 }
 
@@ -53,7 +55,7 @@ void EditPointDialog::updateButtons() {
 }
 
 void EditPointDialog::appendSensor(size_t id) {
-    auto* item = new ListItemWithID{id, getSensorDesc(globals::db.sensors().at(id)).c_str()};
+    auto* item = new ListItemWithData<size_t>{id, getSensorDesc(globals::db.sensors().at(id)).c_str()};
     ui.allSensors->addItem(item);
     updateButtons();
 }
@@ -77,10 +79,10 @@ void EditPointDialog::deleteSensor() {
         ui.allSensors->addItem(ui.currentSensors->takeItem(ui.currentSensors->currentRow()));
     }
     else if (ui.currentSensors->currentRow() < 0 && ui.allSensors->currentRow() >= 0) {
-        auto* item = dynamic_cast<ListItemWithID*>(ui.allSensors->currentItem());
+        auto* item = dynamic_cast<ListItemWithData<size_t>*>(ui.allSensors->currentItem());
 
         if (item != nullptr) {
-            globals::db.deleteSensor(item->getID());
+            globals::db.deleteSensor(item->data());
             delete ui.allSensors->takeItem(ui.allSensors->currentRow());
         }
     }
@@ -93,7 +95,7 @@ void EditPointDialog::applyChanges() {
     sensors.reserve(ui.currentSensors->count());
 
     for (int i = 0; i < ui.currentSensors->count(); i++) {
-        sensors.push_back(globals::db.sensors().at(dynamic_cast<ListItemWithID*>(ui.currentSensors->item(i))->getID()));
+        sensors.push_back(globals::db.sensors().at(dynamic_cast<ListItemWithData<size_t>*>(ui.currentSensors->item(i))->data()));
     }
 
     point.title(ui.pointInfo->text().toStdString());
