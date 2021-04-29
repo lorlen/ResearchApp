@@ -2,12 +2,13 @@ cmake_minimum_required(VERSION 3.14)
 project(ResearchApp)
 
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOUIC_SEARCH_PATHS "${PROJECT_SOURCE_DIR}/src/designer")
 set(CMAKE_CXX_CLANG_TIDY "clang-tidy")
 
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/src/*.cpp" "${PROJECT_SOURCE_DIR}/include/*.h")
 
-find_package(Qt5Core)
-find_package(Qt5Widgets)
+find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
 
 include(FetchContent)
 
@@ -33,7 +34,6 @@ target_compile_options(ResearchApp
         ${-Wextra}
         ${-pedantic}
         $<$<CONFIG:Debug>:-Og>
-        $<$<CONFIG:Release>:-flto>
 )
 
 target_sources(ResearchApp PRIVATE ${sources})
@@ -45,6 +45,9 @@ target_include_directories(ResearchApp
         $<BUILD_INTERFACE:${picosha2_SOURCE_DIR}>
 )
 
-target_link_libraries(ResearchApp PRIVATE Qt5::Core)
-target_link_libraries(ResearchApp PRIVATE Qt5::Widgets)
-target_link_libraries(ResearchApp PRIVATE nlohmann_json::nlohmann_json)
+target_link_libraries(ResearchApp
+    PRIVATE
+        Qt5::Core
+        Qt5::Widgets
+        nlohmann_json::nlohmann_json
+)
