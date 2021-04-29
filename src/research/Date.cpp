@@ -4,13 +4,15 @@
 #include <iomanip>
 #include <sstream>
 
-static inline bool isLeapYear(uint32_t year) {
+#include "numtypes.h"
+
+static inline bool isLeapYear(u32 year) {
     return year % 400 == 0 || (year % 100 != 0 && year % 4 == 0);
 }
 
-static std::array<uint32_t, 12> daysInMonth = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+static std::array<u32, 12> daysInMonth = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
-Date::Date(uint32_t year, uint32_t month, uint32_t day) : m_year(year), m_month(month), m_day(day) {
+Date::Date(u32 year, u32 month, u32 day) : m_year(year), m_month(month), m_day(day) {
     validate();
 }
 
@@ -36,15 +38,15 @@ void Date::fromISOString(const std::string& isoString) {
     }
 }
 
-uint32_t Date::year() const {
+u32 Date::year() const {
     return m_year;
 }
 
-uint32_t Date::month() const {
+u32 Date::month() const {
     return m_month;
 }
 
-uint32_t Date::day() const {
+u32 Date::day() const {
     return m_day;
 }
 

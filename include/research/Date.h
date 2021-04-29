@@ -6,6 +6,8 @@
 #include <string>
 #include <nlohmann/json.hpp>
 
+#include "numtypes.h"
+
 #if __has_include(<QtCore/QDate>)
 #include <QtCore/QDate>
 #endif
@@ -13,19 +15,19 @@
 using nlohmann::json;
 
 class Date {
-    uint32_t m_year{}, m_month{}, m_day{};
+    u32 m_year{}, m_month{}, m_day{};
 
     void validate() const;
     void fromISOString(const std::string& isoString);
 
 public:
     Date() = default;
-    Date(uint32_t year, uint32_t month, uint32_t day);
+    Date(u32 year, u32 month, u32 day);
     explicit Date(const std::string& isoString);
 
-    uint32_t year() const;
-    uint32_t month() const;
-    uint32_t day() const;
+    u32 year() const;
+    u32 month() const;
+    u32 day() const;
     std::string toISOString() const;
 
     friend bool operator==(const Date& lhs, const Date& rhs);

@@ -5,11 +5,13 @@
 #include <sstream>
 #include <picosha2.h>
 
+#include "numtypes.h"
+
 User::User(std::string login, std::string displayName, const std::string& password, bool isAdmin)
         : Record(std::move(login)), m_displayName(std::move(displayName)), m_admin(isAdmin) {
     auto gen = std::mt19937_64(std::random_device()());
     std::ostringstream stream;
-    stream << std::setfill('0') << std::setw(sizeof(uint64_t) * 2) << std::hex << gen();
+    stream << std::setfill('0') << std::setw(sizeof(u64) * 2) << std::hex << gen();
     m_passwdSalt = stream.str();
     m_passwdHash = hashPassword(password);
 }
