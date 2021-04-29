@@ -16,7 +16,7 @@ private:
 
 private slots:
     void updateButtons();
-    void appendUser(std::string login);
+    void appendUser(const std::string& login);
     void newUser();
     void addResearcher();
     void deleteResearcher();
@@ -32,7 +32,7 @@ public:
      * @param parent see Qt docs.
      * @param f see Qt docs.
      */
-    explicit EditResearchersDialog(std::shared_ptr<Research> research, QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+    explicit EditResearchersDialog(const std::shared_ptr<Research>& research, QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 };
 
 

@@ -12,20 +12,21 @@ NewUserDialog::NewUserDialog(QWidget* parent, Qt::WindowFlags f)
     connect(ui.retypePassword, &QLineEdit::textChanged, this, &NewUserDialog::validateRetypePass);
 }
 
-void NewUserDialog::setValid(QLineEdit* line, bool& prop, bool valid, QString message) {
+void NewUserDialog::setValid(QLineEdit* line, bool& prop, bool valid, const QString& message) {
     prop = valid;
     line->setStyleSheet(valid ? "" : "background-color: rgb(255, 128, 128)");
 
-    if (!valid)
+    if (!valid) {
         ui.status->setText("<span style=\"color: red\">" + message + "</span>");
-    else
+    } else {
         ui.status->setText("");
+    }
 
     updateButtons();
 }
 
 void NewUserDialog::updateButtons() {
-    auto okButton = ui.buttonBox->button(QDialogButtonBox::Ok);
+    auto* okButton = ui.buttonBox->button(QDialogButtonBox::Ok);
     bool valid = loginValid && passValid && retypePassValid;
 
     okButton->setAutoDefault(valid);
@@ -45,12 +46,13 @@ void NewUserDialog::validateLogin() {
         }
     }
 
-    if (isUserInDb)
+    if (isUserInDb) {
         setValid(ui.login, loginValid, false, "User already exists");
-    else if (ui.login->text().isEmpty())
+    } else if (ui.login->text().isEmpty()) {
         setValid(ui.login, loginValid, false, "Login must not be empty");
-    else
+    } else {
         setValid(ui.login, loginValid, true, "");
+    }
 }
 
 void NewUserDialog::validatePass() {

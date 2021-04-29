@@ -7,9 +7,9 @@
 #include "ui/ListItemWithData.h"
 #include "globals.h"
 
-static std::string getSensorDesc(std::shared_ptr<Sensor> sensor) {
+static std::string getSensorDesc(const Sensor& sensor) {
     std::ostringstream stream;
-    stream << sensor->label() << " (" << sensor->type() << "; " << sensor->unit() << ")";
+    stream << sensor.label() << " (" << sensor.type() << "; " << sensor.unit() << ")";
     return stream.str();
 }
 
@@ -26,13 +26,13 @@ EditPointDialog::EditPointDialog(ResearchPoint& point, bool blank, QWidget* pare
         if (std::find_if(pointSensors.begin(), pointSensors.end(),
             [&sensor = sensor](auto e) { return *e.lock() == *sensor; }) == pointSensors.end())
         {
-            auto* item = new ListItemWithData<size_t>{sensor->id(), getSensorDesc(sensor).c_str()};
+            auto* item = new ListItemWithData<size_t>{sensor->id(), getSensorDesc(*sensor).c_str()};
             ui.allSensors->addItem(item);
         }
     }
 
     for (const auto& sensor: pointSensors) {
-        auto* item = new ListItemWithData<size_t>{sensor.lock()->id(), getSensorDesc(sensor.lock()).c_str()};
+        auto* item = new ListItemWithData<size_t>{sensor.lock()->id(), getSensorDesc(*sensor.lock()).c_str()};
         ui.currentSensors->addItem(item);
     }
 
@@ -57,7 +57,7 @@ void EditPointDialog::updateButtons() {
 }
 
 void EditPointDialog::appendSensor(size_t id) {
-    auto* item = new ListItemWithData<size_t>{id, getSensorDesc(globals::db.sensors().at(id)).c_str()};
+    auto* item = new ListItemWithData<size_t>{id, getSensorDesc(*globals::db.sensors().at(id)).c_str()};
     ui.allSensors->addItem(item);
     updateButtons();
 }
@@ -109,10 +109,12 @@ void EditPointDialog::applyChanges() {
 
 bool EditPointDialog::eventFilter(QObject* obj, QEvent* event) {
     if (event->type() == QEvent::FocusIn) {
-        if (obj == ui.allSensors)
+        if (obj == ui.allSensors) {
             ui.currentSensors->setCurrentRow(-1);
-        else if (obj == ui.currentSensors)
+        } else if (obj == ui.currentSensors) {
             ui.allSensors->setCurrentRow(-1);
+        }
+
         updateButtons();
     }
     return false;

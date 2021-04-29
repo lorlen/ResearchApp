@@ -5,7 +5,7 @@
 #include "ui/ListItemWithData.h"
 #include "globals.h"
 
-EditResearchersDialog::EditResearchersDialog(std::shared_ptr<Research> research, QWidget* parent, Qt::WindowFlags f)
+EditResearchersDialog::EditResearchersDialog(const std::shared_ptr<Research>& research, QWidget* parent, Qt::WindowFlags f)
         : QDialog{parent, f}, ui{}, research{research} {
     ui.setupUi(this);
 
@@ -22,7 +22,7 @@ EditResearchersDialog::EditResearchersDialog(std::shared_ptr<Research> research,
         }
     }
 
-    for (auto user_weak: currentUsers) {
+    for (const auto& user_weak: currentUsers) {
         auto user = user_weak.lock();
         auto* item = new ListItemWithData<std::string>(user->id(), user->displayName().c_str());
         ui.currentResearchers->addItem(item);
@@ -48,7 +48,7 @@ void EditResearchersDialog::updateButtons() {
     ui.deleteButton->setEnabled(ui.allResearchers->currentRow() >= 0 || ui.currentResearchers->currentRow() >= 0);
 }
 
-void EditResearchersDialog::appendUser(std::string login) {
+void EditResearchersDialog::appendUser(const std::string& login) {
     auto* item = new ListItemWithData<std::string>{login, globals::db.users().at(login)->displayName().c_str()};
     ui.allResearchers->addItem(item);
     updateButtons();
@@ -101,10 +101,12 @@ void EditResearchersDialog::applyChanges() {
 
 bool EditResearchersDialog::eventFilter(QObject* obj, QEvent* event) {
     if (event->type() == QEvent::FocusIn) {
-        if (obj == ui.allResearchers)
+        if (obj == ui.allResearchers) {
             ui.currentResearchers->setCurrentRow(-1);
-        else if (obj == ui.currentResearchers)
+        } else if (obj == ui.currentResearchers) {
             ui.allResearchers->setCurrentRow(-1);
+        }
+        
         updateButtons();
     }
     return false;

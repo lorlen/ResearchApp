@@ -35,20 +35,15 @@ const std::vector<ResearchPoint>& Research::researchPoints() const {
 }
 
 bool Research::isAssignedTo(const std::shared_ptr<User>& user) const {
-    for (auto& user_weak: m_assigned) {
-        if (user_weak.lock()->id() == user->id()) {
-            return true;
-        }
-    }
-
-    return false;
+    return std::any_of(m_assigned.begin(), m_assigned.end(),
+                       [&user](const auto& user_weak) { return user_weak.lock()->id() == user->id(); });
 }
 
 size_t Research::countCheckedPoints() const {
     size_t sum = 0;
 
     for (const auto& point: m_points) {
-        sum += point.checked();
+        sum += size_t(point.checked());
     }
 
     return sum;

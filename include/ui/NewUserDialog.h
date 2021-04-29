@@ -15,7 +15,7 @@ private:
     bool loginValid = false;
     bool passValid = false;
     bool retypePassValid = false;
-    void setValid(QLineEdit* line, bool& prop, bool valid, QString message);
+    void setValid(QLineEdit* line, bool& prop, bool valid, const QString& message);
 
 private slots:
     void updateButtons();

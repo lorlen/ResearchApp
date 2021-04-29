@@ -92,8 +92,11 @@ void MainWindow::loadResearch() {
             auto* item = new QListWidgetItem{};
             item->setText(point.title().c_str());
             item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-            if (!isAllowedToCheck)
+
+            if (!isAllowedToCheck) {
                 item->setFlags(item->flags() & ~Qt::ItemIsEnabled);
+            }
+
             item->setCheckState(point.checked() ? Qt::Checked : Qt::Unchecked);
             selectUi.checklist->addItem(item);
         }

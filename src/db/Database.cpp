@@ -7,13 +7,20 @@
 using nlohmann::json;
 
 Database::Database(std::string rPath, std::string uPath, std::string sPath)
-        : researchesPath(rPath), usersPath(uPath), sensorsPath(sPath) {
-    std::ifstream researchesFile(researchesPath), usersFile(usersPath), sensorsFile(sensorsPath);
+        : researchesPath(std::move(rPath)), usersPath(std::move(uPath)), sensorsPath(std::move(sPath))
+{
+    std::ifstream researchesFile(researchesPath);
+    std::ifstream usersFile(usersPath);
+    std::ifstream sensorsFile(sensorsPath);
 
-    json researchesJSON, usersJSON, sensorsJSON;
+    json researchesJSON;
+    json usersJSON;
+    json sensorsJSON;
 
     if (!researchesFile.good() || !usersFile.good() || !sensorsFile.good()) {
-        std::ofstream researchesFile(researchesPath), usersFile(usersPath), sensorsFile(sensorsPath);
+        std::ofstream researchesFile(researchesPath);
+        std::ofstream usersFile(usersPath);
+        std::ofstream sensorsFile(sensorsPath);
 
         auto admin = std::make_shared<User>("admin", "admin", "admin", true);
         m_users.emplace(admin->m_id, admin);
@@ -65,7 +72,7 @@ Database::Database(std::string rPath, std::string uPath, std::string sPath)
 
         res->author(m_users.at(val.at("author").get<std::string>()));
 
-        for (auto user_id : val.at("assigned").get<std::vector<std::string>>()) {
+        for (const auto& user_id : val.at("assigned").get<std::vector<std::string>>()) {
             res->assignUser(m_users.at(user_id));
         }
 
@@ -82,51 +89,59 @@ Database::Database(std::string rPath, std::string uPath, std::string sPath)
 }
 
 Database::~Database() {
-    std::ofstream researchesFile(researchesPath), usersFile(usersPath), sensorsFile(sensorsPath);
+    try {
+        std::ofstream researchesFile(researchesPath);
+        std::ofstream usersFile(usersPath);
+        std::ofstream sensorsFile(sensorsPath);
 
-    json researchesJSON, usersJSON, sensorsJSON;
+        json researchesJSON;
+        json usersJSON;
+        json sensorsJSON;
 
-    researchesJSON = {
-            {"next_id", researchesNextID},
-            {"researches", json::object()}
-    };
+        researchesJSON = {
+                {"next_id", researchesNextID},
+                {"researches", json::object()}
+        };
 
-    usersJSON = {
-            {"users", json::object()}
-    };
+        usersJSON = {
+                {"users", json::object()}
+        };
 
-    sensorsJSON = {
-            {"next_id", sensorsNextID},
-            {"sensors", json::object()}
-    };
+        sensorsJSON = {
+                {"next_id", sensorsNextID},
+                {"sensors", json::object()}
+        };
 
-    for (const auto& [id, val]: m_researches) {
-        researchesJSON.at("researches").emplace(std::to_string(id), *val);
-    }
+        for (const auto& [id, val]: m_researches) {
+            researchesJSON.at("researches").emplace(std::to_string(id), *val);
+        }
 
-    for (const auto& [login, val]: m_users) {
-        usersJSON.at("users").emplace(login, *val);
-    }
+        for (const auto& [login, val]: m_users) {
+            usersJSON.at("users").emplace(login, *val);
+        }
 
-    for (const auto& [id, val]: m_sensors) {
-        sensorsJSON.at("sensors").emplace(std::to_string(id), *val);
-    }
+        for (const auto& [id, val]: m_sensors) {
+            sensorsJSON.at("sensors").emplace(std::to_string(id), *val);
+        }
 
-    researchesFile << researchesJSON;
-    usersFile << usersJSON;
-    sensorsFile << sensorsJSON;
+        researchesFile << researchesJSON;
+        usersFile << usersJSON;
+        sensorsFile << sensorsJSON;
+    } catch (...) {}
 }
 
 inline void Database::checkUser() const {
-    if (!m_currentUser)
+    if (!m_currentUser) {
         throw NotLoggedInException("");
+    }
 }
 
 inline void Database::checkAdmin() const {
     checkUser();
 
-    if (!m_currentUser->admin())
+    if (!m_currentUser->admin()) {
         throw InsufficientPrivilegesException("");
+    }
 }
 
 void Database::logIn(const std::string& login, const std::string& password) const {
@@ -207,8 +222,11 @@ size_t Database::addResearch(const Research& research) {
     checkAdmin();
     auto rptr = std::make_shared<Research>(research);
     rptr->m_id = researchesNextID;
-    if (!rptr->author().lock())
+
+    if (!rptr->author().lock()) {
         rptr->author(m_currentUser);
+    }
+    
     m_researches.emplace(researchesNextID, rptr);
     return researchesNextID++;
 }

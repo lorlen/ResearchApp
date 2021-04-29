@@ -8,5 +8,5 @@ int main(int argc, char* argv[]) {
     loginWindow->setAttribute(Qt::WA_DeleteOnClose);
     loginWindow->show();
 
-    return app.exec();
+    return QApplication::exec();
 }
