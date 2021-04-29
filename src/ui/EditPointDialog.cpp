@@ -23,7 +23,9 @@ EditPointDialog::EditPointDialog(ResearchPoint& point, bool blank, QWidget* pare
     const auto& pointSensors = point.sensors();
 
     for (const auto& [id, sensor]: globals::db.sensors()) {
-        if (std::find_if(pointSensors.begin(), pointSensors.end(), [&sensor](auto e) { return *e.lock() == *sensor; }) == pointSensors.end()) {
+        if (std::find_if(pointSensors.begin(), pointSensors.end(),
+            [&sensor = sensor](auto e) { return *e.lock() == *sensor; }) == pointSensors.end())
+        {
             auto* item = new ListItemWithData<size_t>{sensor->id(), getSensorDesc(sensor).c_str()};
             ui.allSensors->addItem(item);
         }

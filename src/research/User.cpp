@@ -3,7 +3,7 @@
 #include <iomanip>
 #include <random>
 #include <sstream>
-#include "external/picosha2.h"
+#include <picosha2.h>
 
 User::User(std::string login, std::string displayName, const std::string& password, bool isAdmin)
         : Record(std::move(login)), m_displayName(std::move(displayName)), m_admin(isAdmin) {

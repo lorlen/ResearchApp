@@ -14,7 +14,9 @@ EditResearchersDialog::EditResearchersDialog(std::shared_ptr<Research> research,
     auto currentUsers = research->assignedUsers();
 
     for (const auto& [id, user]: globals::db.users()) {
-        if (std::find_if(currentUsers.begin(), currentUsers.end(), [&user](auto e) { return *e.lock() == *user; }) == currentUsers.end()) {
+        if (std::find_if(currentUsers.begin(), currentUsers.end(),
+            [&user = user](auto e) { return *e.lock() == *user; }) == currentUsers.end())
+        {
             auto* item = new ListItemWithData<std::string>{id, user->displayName().c_str()};
             ui.allResearchers->addItem(item);
         }

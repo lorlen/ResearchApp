@@ -1,7 +1,13 @@
 cmake_minimum_required(VERSION 3.14)
 project(ResearchApp)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_CXX_CLANG_TIDY "clang-tidy")
+
+file(GLOB_RECURSE sources CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/src/*.cpp" "${PROJECT_SOURCE_DIR}/include/*.h")
+
+find_package(Qt5Core)
+find_package(Qt5Widgets)
 
 include(FetchContent)
 
@@ -11,6 +17,34 @@ FetchContent_Declare(
     GIT_TAG v3.9.1
 )
 
-FetchContent_MakeAvailable(json)
+FetchContent_Declare(
+    picosha2
+    GIT_REPOSITORY https://github.com/okdshin/PicoSHA2
+)
 
-add_subdirectory(src)
+FetchContent_MakeAvailable(json picosha2)
+
+add_executable(ResearchApp)
+
+target_compile_features(ResearchApp PUBLIC cxx_std_17)
+target_compile_options(ResearchApp
+    PRIVATE
+        ${-Wall}
+        ${-Wextra}
+        ${-pedantic}
+        $<$<CONFIG:Debug>:-Og>
+        $<$<CONFIG:Release>:-flto>
+)
+
+target_sources(ResearchApp PRIVATE ${sources})
+
+target_include_directories(ResearchApp
+    PUBLIC
+        $<BUILD_INTERFACE:${ResearchApp_SOURCE_DIR}/include>
+    PRIVATE
+        $<BUILD_INTERFACE:${picosha2_SOURCE_DIR}>
+)
+
+target_link_libraries(ResearchApp PRIVATE Qt5::Core)
+target_link_libraries(ResearchApp PRIVATE Qt5::Widgets)
+target_link_libraries(ResearchApp PRIVATE nlohmann_json::nlohmann_json)
