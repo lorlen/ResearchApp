@@ -5,8 +5,8 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <nlohmann/json.hpp>
 #include "research/Sensor.h"
-#include "external/json.hpp"
 
 using nlohmann::json;
 

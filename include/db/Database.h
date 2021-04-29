@@ -6,11 +6,11 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <nlohmann/json.hpp>
 #include "research/Date.h"
 #include "research/Research.h"
 #include "research/User.h"
 #include "research/Sensor.h"
-#include "external/json.hpp"
 
 using nlohmann::json;
 

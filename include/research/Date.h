@@ -4,7 +4,7 @@
 
 #include <stdexcept>
 #include <string>
-#include "external/json.hpp"
+#include <nlohmann/json.hpp>
 
 #if __has_include(<QtCore/QDate>)
 #include <QtCore/QDate>

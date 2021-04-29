@@ -4,8 +4,8 @@
 
 #include <memory>
 #include <string>
+#include <nlohmann/json.hpp>
 #include "db/Record.h"
-#include "external/json.hpp"
 
 using nlohmann::json;
 
