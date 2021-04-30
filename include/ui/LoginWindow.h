@@ -3,7 +3,7 @@
 
 
 #include <QtWidgets/QWidget>
-#include "ui/ui_login.h"
+#include "designer/ui_login.h"
 
 /**
  * A window shown at application startup, prompting the user to log in to the

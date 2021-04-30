@@ -4,12 +4,12 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QDesktopWidget>
 
+#include "db/Database.h"
 #include "ui/MainWindow.h"
 #include "ui/LoginWindow.h"
 #include "ui/SensorListDialog.h"
 #include "ui/EditResearchersDialog.h"
 #include "ui/EditPointDialog.h"
-#include "globals.h"
 #include "research/Research.h"
 
 MainWindow::MainWindow() : mainUi{}, addUi{}, selectUi{} {

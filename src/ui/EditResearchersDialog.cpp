@@ -1,9 +1,9 @@
 #include <algorithm>
 
+#include "db/Database.h"
 #include "ui/EditResearchersDialog.h"
 #include "ui/NewUserDialog.h"
 #include "ui/ListItemWithData.h"
-#include "globals.h"
 
 EditResearchersDialog::EditResearchersDialog(const std::shared_ptr<Research>& research, QWidget* parent, Qt::WindowFlags f)
         : QDialog{parent, f}, ui{}, research{research} {

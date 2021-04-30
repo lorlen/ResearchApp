@@ -3,7 +3,7 @@
 
 
 #include <QtWidgets/QDialog>
-#include "ui/ui_sensorlist.h"
+#include "designer/ui_sensorlist.h"
 #include "research/Research.h"
 
 /**

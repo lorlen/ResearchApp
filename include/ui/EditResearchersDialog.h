@@ -3,7 +3,7 @@
 
 
 #include <QtWidgets/QDialog>
-#include "ui/ui_editresearchers.h"
+#include "designer/ui_editresearchers.h"
 #include "research/Research.h"
 
 /**

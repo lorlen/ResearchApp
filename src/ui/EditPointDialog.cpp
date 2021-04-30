@@ -2,10 +2,10 @@
 #include <sstream>
 #include <vector>
 
+#include "db/Database.h"
 #include "ui/EditPointDialog.h"
 #include "ui/NewSensorDialog.h"
 #include "ui/ListItemWithData.h"
-#include "globals.h"
 
 static std::string getSensorDesc(const Sensor& sensor) {
     std::ostringstream stream;

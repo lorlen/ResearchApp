@@ -3,7 +3,7 @@
 
 
 #include <QtWidgets/QDialog>
-#include "ui/ui_newsensor.h"
+#include "designer/ui_newsensor.h"
 
 /**
  * A dialog used to add sensors to the global database.

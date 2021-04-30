@@ -6,6 +6,8 @@
 
 using nlohmann::json;
 
+Database globals::db;
+
 Database::Database(std::string rPath, std::string uPath, std::string sPath)
         : researchesPath(std::move(rPath)), usersPath(std::move(uPath)), sensorsPath(std::move(sPath))
 {

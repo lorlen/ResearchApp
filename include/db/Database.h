@@ -71,5 +71,12 @@ public:
     void deleteSensor(size_t id);
 };
 
+namespace globals {
+    /**
+     * The global database singleton.
+     */
+    extern ::Database db;
+}
+
 
 #endif //RESEARCHAPP_DATABASE_H

@@ -1,5 +1,6 @@
 #include "ui/NewSensorDialog.h"
-#include "globals.h"
+
+#include "db/Database.h"
 
 NewSensorDialog::NewSensorDialog(QWidget* parent, Qt::WindowFlags f)
         : QDialog{parent, f}, ui{} {

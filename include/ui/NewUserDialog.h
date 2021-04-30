@@ -2,7 +2,7 @@
 #define RESEARCHAPP_NEWUSERDIALOG_H
 
 
-#include "ui_newuser.h"
+#include "designer/ui_newuser.h"
 
 /**
  * A dialog used to create new users.

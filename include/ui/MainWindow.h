@@ -4,9 +4,9 @@
 
 #include <vector>
 #include <QWidget>
-#include "ui/ui_main.h"
-#include "ui/ui_addresearch.h"
-#include "ui/ui_selectresearch.h"
+#include "designer/ui_main.h"
+#include "designer/ui_addresearch.h"
+#include "designer/ui_selectresearch.h"
 #include "research/Research.h"
 
 /**

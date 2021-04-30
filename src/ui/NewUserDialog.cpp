@@ -1,5 +1,8 @@
 #include "ui/NewUserDialog.h"
-#include "globals.h"
+
+#include <QtWidgets/QPushButton>
+
+#include "db/Database.h"
 
 NewUserDialog::NewUserDialog(QWidget* parent, Qt::WindowFlags f)
         : QDialog{parent, f}, ui{} {

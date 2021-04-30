@@ -1,5 +1,6 @@
 #include "ui/SensorListDialog.h"
-#include "globals.h"
+
+#include "db/Database.h"
 
 SensorListDialog::SensorListDialog(const std::shared_ptr<Research>& research, QWidget* parent, Qt::WindowFlags f)
         : QDialog{parent, f}, ui{} {
