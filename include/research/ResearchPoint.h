@@ -1,6 +1,4 @@
-#ifndef RESEARCHAPP_RESEARCHPOINT_H
-#define RESEARCHAPP_RESEARCHPOINT_H
-
+#pragma once
 
 #include <memory>
 #include <string>
@@ -34,6 +32,3 @@ public:
     friend void to_json(json& j, const ResearchPoint& point);
     friend void from_json(const json& j, ResearchPoint& point);
 };
-
-
-#endif //RESEARCHAPP_RESEARCHPOINT_H

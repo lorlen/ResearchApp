@@ -1,6 +1,4 @@
-#ifndef RESEARCHAPP_SENSOR_H
-#define RESEARCHAPP_SENSOR_H
-
+#pragma once
 
 #include <string>
 #include <nlohmann/json.hpp>
@@ -26,6 +24,3 @@ public:
     friend void to_json(json& j, const Sensor& sensor);
     friend void from_json(const json& j, Sensor& sensor);
 };
-
-
-#endif //RESEARCHAPP_SENSOR_H

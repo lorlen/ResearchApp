@@ -1,6 +1,4 @@
-#ifndef RESEARCHAPP_EXCEPTIONS_H
-#define RESEARCHAPP_EXCEPTIONS_H
-
+#pragma once
 
 #include <stdexcept>
 
@@ -19,5 +17,3 @@ class NotLoggedInException: public DatabaseException {
 class InsufficientPrivilegesException: public DatabaseException {
     using DatabaseException::DatabaseException;
 };
-
-#endif //RESEARCHAPP_EXCEPTIONS_H

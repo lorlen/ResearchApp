@@ -1,6 +1,4 @@
-#ifndef RESEARCHAPP_NEWSENSORDIALOG_H
-#define RESEARCHAPP_NEWSENSORDIALOG_H
-
+#pragma once
 
 #include <QtWidgets/QDialog>
 #include "designer/ui_newsensor.h"
@@ -33,6 +31,3 @@ public:
     explicit NewSensorDialog(QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
     ~NewSensorDialog() override = default;
 };
-
-
-#endif //RESEARCHAPP_NEWSENSORDIALOG_H

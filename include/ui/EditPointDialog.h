@@ -1,6 +1,4 @@
-#ifndef RESEARCHAPP_EDITPOINTDIALOG_H
-#define RESEARCHAPP_EDITPOINTDIALOG_H
-
+#pragma once
 
 #include <QtWidgets/QDialog>
 #include "designer/ui_editpoint.h"
@@ -47,6 +45,3 @@ public:
     explicit EditPointDialog(ResearchPoint& point, bool blank, QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
     ~EditPointDialog() override = default;
 };
-
-
-#endif //RESEARCHAPP_EDITPOINTDIALOG_H

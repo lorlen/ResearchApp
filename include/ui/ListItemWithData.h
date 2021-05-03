@@ -1,6 +1,4 @@
-#ifndef RESEARCHAPP_LISTITEMWITHDATA_H
-#define RESEARCHAPP_LISTITEMWITHDATA_H
-
+#pragma once
 
 #include <QtWidgets/QListWidgetItem>
 
@@ -43,6 +41,3 @@ public:
         m_data = std::move(newData);
     }
 };
-
-
-#endif //RESEARCHAPP_LISTITEMWITHDATA_H

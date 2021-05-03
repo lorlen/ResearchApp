@@ -1,6 +1,4 @@
-#ifndef RESEARCHAPP_EDITRESEARCHERSDIALOG_H
-#define RESEARCHAPP_EDITRESEARCHERSDIALOG_H
-
+#pragma once
 
 #include <QtWidgets/QDialog>
 #include "designer/ui_editresearchers.h"
@@ -34,6 +32,3 @@ public:
      */
     explicit EditResearchersDialog(const std::shared_ptr<Research>& research, QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 };
-
-
-#endif //RESEARCHAPP_EDITRESEARCHERSDIALOG_H

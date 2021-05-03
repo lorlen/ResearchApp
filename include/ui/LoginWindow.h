@@ -1,6 +1,4 @@
-#ifndef RESEARCHAPP_LOGINWINDOW_H
-#define RESEARCHAPP_LOGINWINDOW_H
-
+#pragma once
 
 #include <QtWidgets/QWidget>
 #include "designer/ui_login.h"
@@ -19,6 +17,3 @@ private slots:
 public:
     LoginWindow();
 };
-
-
-#endif //RESEARCHAPP_LOGINWINDOW_H

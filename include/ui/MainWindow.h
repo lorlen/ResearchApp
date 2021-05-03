@@ -1,6 +1,4 @@
-#ifndef RESEARCHAPP_MAINWINDOW_H
-#define RESEARCHAPP_MAINWINDOW_H
-
+#pragma once
 
 #include <vector>
 #include <QWidget>
@@ -45,6 +43,3 @@ private slots:
 public:
     MainWindow();
 };
-
-
-#endif //RESEARCHAPP_MAINWINDOW_H

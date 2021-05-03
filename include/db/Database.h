@@ -1,6 +1,4 @@
-#ifndef RESEARCHAPP_DATABASE_H
-#define RESEARCHAPP_DATABASE_H
-
+#pragma once
 
 #include <map>
 #include <memory>
@@ -77,6 +75,3 @@ namespace globals {
      */
     extern ::Database db;
 }
-
-
-#endif //RESEARCHAPP_DATABASE_H

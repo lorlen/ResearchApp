@@ -1,6 +1,4 @@
-#ifndef RESEARCHAPP_NEWUSERDIALOG_H
-#define RESEARCHAPP_NEWUSERDIALOG_H
-
+#pragma once
 
 #include "designer/ui_newuser.h"
 
@@ -39,6 +37,3 @@ public:
      */
     explicit NewUserDialog(QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 };
-
-
-#endif //RESEARCHAPP_NEWUSERDIALOG_H

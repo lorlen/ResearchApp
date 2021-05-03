@@ -1,6 +1,4 @@
-#ifndef RESEARCHAPP_SENSORLISTDIALOG_H
-#define RESEARCHAPP_SENSORLISTDIALOG_H
-
+#pragma once
 
 #include <QtWidgets/QDialog>
 #include "designer/ui_sensorlist.h"
@@ -21,6 +19,3 @@ public:
      */
     explicit SensorListDialog(const std::shared_ptr<Research>& research, QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 };
-
-
-#endif //RESEARCHAPP_SENSORLISTDIALOG_H

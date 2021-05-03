@@ -1,6 +1,4 @@
-#ifndef RESEARCHAPP_DATE_H
-#define RESEARCHAPP_DATE_H
-
+#pragma once
 
 #include <stdexcept>
 #include <string>
@@ -50,6 +48,3 @@ public:
 class InvalidDateException : public std::runtime_error {
     using std::runtime_error::runtime_error;
 };
-
-
-#endif //RESEARCHAPP_DATE_H

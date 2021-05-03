@@ -1,6 +1,4 @@
-#ifndef RESEARCHAPP_NUMTYPES_H
-#define RESEARCHAPP_NUMTYPES_H
-
+#pragma once
 
 #include <cstdint>
 
@@ -16,6 +14,3 @@ using i64 = int64_t;
 
 using f32 = float;
 using f64 = double;
-
-
-#endif // RESEARCHAPP_NUMTYPES_H

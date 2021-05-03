@@ -1,6 +1,4 @@
-#ifndef RESEARCHAPP_RECORD_H
-#define RESEARCHAPP_RECORD_H
-
+#pragma once
 
 class Database;
 
@@ -23,6 +21,3 @@ public:
 
     friend class Database;
 };
-
-
-#endif //RESEARCHAPP_RECORD_H
