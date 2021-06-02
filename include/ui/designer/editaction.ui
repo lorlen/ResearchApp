@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>EditResearchPoint</class>
- <widget class="QDialog" name="EditResearchPoint">
+ <class>EditAction</class>
+ <widget class="QDialog" name="EditAction">
   <property name="windowModality">
    <enum>Qt::ApplicationModal</enum>
   </property>
@@ -14,7 +14,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Edit research point</string>
+   <string>Edit action</string>
   </property>
   <property name="modal">
    <bool>true</bool>
@@ -48,7 +48,7 @@
     </widget>
    </item>
    <item row="1" column="0" colspan="4">
-    <widget class="QLineEdit" name="pointInfo"/>
+    <widget class="QLineEdit" name="actionTitle"/>
    </item>
    <item row="3" column="1">
     <widget class="QPushButton" name="newButton">
@@ -60,14 +60,14 @@
    <item row="0" column="0" colspan="4">
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>Information:</string>
+      <string>Title:</string>
      </property>
     </widget>
    </item>
    <item row="2" column="0" colspan="4">
     <widget class="QCheckBox" name="requiredMeasurement">
      <property name="text">
-      <string>Required measurement</string>
+      <string>Required</string>
      </property>
     </widget>
    </item>
@@ -84,7 +84,7 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>pointInfo</tabstop>
+  <tabstop>actionTitle</tabstop>
   <tabstop>requiredMeasurement</tabstop>
   <tabstop>newButton</tabstop>
   <tabstop>addButton</tabstop>
@@ -97,7 +97,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>EditResearchPoint</receiver>
+   <receiver>EditAction</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -113,7 +113,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>EditResearchPoint</receiver>
+   <receiver>EditAction</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

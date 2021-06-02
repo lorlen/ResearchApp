@@ -1,6 +1,6 @@
 #include "ui/NewSensorDialog.h"
 
-#include "db/Database.h"
+#include "db/StorageManager.h"
 
 NewSensorDialog::NewSensorDialog(QWidget* parent, Qt::WindowFlags f)
         : QDialog{parent, f}, ui{} {
@@ -10,11 +10,12 @@ NewSensorDialog::NewSensorDialog(QWidget* parent, Qt::WindowFlags f)
 }
 
 void NewSensorDialog::applyChanges() {
-    Sensor sensor(
-            ui.sensorLabel->text().toStdString(),
-            ui.sensorType->text().toStdString(),
-            ui.sensorUnit->text().toStdString()
-    );
-
-    emit sensorAdded(globals::db.addSensor(sensor));
+    Sensor sensor {
+        -1,
+        ui.sensorLabel->text().toStdString(),
+        ui.sensorType->text().toStdString(),
+        ui.sensorUnit->text().toStdString()
+    };
+    sensor.id = StorageManager::get().insert(sensor);
+    emit sensorAdded(sensor);
 }

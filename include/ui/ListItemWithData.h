@@ -25,11 +25,11 @@ public:
     /**
      * @return associated data.
      */
-    const T& data() const {
+    const T& itemData() const {
         return m_data;
     }
 
-    T& data() {
+    T& itemData() {
         return m_data;
     }
 
@@ -37,7 +37,7 @@ public:
      * Sets the associated data to a new value.
      * @param newData replacement data.
      */
-    void data(T newData) {
+    void itemData(T newData) {
         m_data = std::move(newData);
     }
 };

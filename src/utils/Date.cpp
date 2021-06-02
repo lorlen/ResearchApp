@@ -1,4 +1,4 @@
-#include "research/Date.h"
+#include "utils/Date.h"
 
 #include <array>
 #include <iomanip>
@@ -33,9 +33,17 @@ void Date::validate() const {
 }
 
 void Date::fromISOString(const std::string& isoString) {
-    if (sscanf(isoString.c_str(), "%4d-%2d-%2d", &m_year, &m_month, &m_day) != 3) {
+    std::istringstream stream(isoString);
+    std::tm time{};
+    stream >> std::get_time(&time, "%Y-%m-%d");
+
+    if (stream.fail()) {
         throw InvalidDateException("\"" + isoString + "\" is not a valid ISO format date");
     }
+
+    m_year = time.tm_year + 1900;
+    m_month = time.tm_mon + 1;
+    m_day = time.tm_mday;
 }
 
 u32 Date::year() const {
@@ -57,6 +65,10 @@ std::string Date::toISOString() const {
            << std::setw(2) << m_month << '-'
            << std::setw(2) << m_day;
     return stream.str();
+}
+
+Date::operator std::string() const {
+    return toISOString();
 }
 
 #if __has_include(<QtCore/QDate>)
@@ -98,13 +110,5 @@ bool operator<=(const Date& lhs, const Date& rhs) {
 
 bool operator>=(const Date& lhs, const Date& rhs) {
     return !(lhs < rhs);
-}
-
-void to_json(json& j, const Date& date) {
-    j = date.toISOString();
-}
-
-void from_json(const json& j, Date& date) {
-    date.fromISOString(j.get<std::string>());
 }
 

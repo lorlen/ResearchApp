@@ -2,6 +2,7 @@
 
 #include <QtWidgets/QDialog>
 #include "designer/ui_newsensor.h"
+#include "entities/Sensor.h"
 
 /**
  * A dialog used to add sensors to the global database.
@@ -18,9 +19,8 @@ private slots:
 signals:
     /**
      * Signal fired to notify that a new sensor has been added.
-     * @param id ID of the sensor added.
      */
-    void sensorAdded(size_t id);
+    void sensorAdded(Sensor sensor);
 
 public:
     /**

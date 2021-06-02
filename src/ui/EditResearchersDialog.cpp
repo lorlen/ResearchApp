@@ -1,30 +1,34 @@
 #include <algorithm>
 
-#include "db/Database.h"
+#include "db/StorageManager.h"
 #include "ui/EditResearchersDialog.h"
 #include "ui/NewUserDialog.h"
 #include "ui/ListItemWithData.h"
 
-EditResearchersDialog::EditResearchersDialog(const std::shared_ptr<Research>& research, QWidget* parent, Qt::WindowFlags f)
-        : QDialog{parent, f}, ui{}, research{research} {
+EditResearchersDialog::EditResearchersDialog(decltype(Research::id) researchId, const std::string& title, QWidget* parent, Qt::WindowFlags f)
+        : QDialog{parent, f}, ui{}, researchId{researchId} {
+    using namespace sqlite_orm;
+
     ui.setupUi(this);
+    ui.researchTitle->setText(QString("Research title: ") + title.c_str());
 
-    ui.researchTitle->setText(QString("Research title: ") + research->title().c_str());
+    auto storage = StorageManager::get();
 
-    auto currentUsers = research->assignedUsers();
+    auto user_cols = columns(&User::id, &User::displayName);
+    auto nonAssignedUsers = storage.select(except(select(user_cols),
+                                                  select(user_cols, inner_join<Assignment>(using_(&User::id)),
+                                                         where(c(&Assignment::researchId) == researchId))));
 
-    for (const auto& [id, user]: globals::db.users()) {
-        if (std::find_if(currentUsers.begin(), currentUsers.end(),
-            [&user = user](auto e) { return *e.lock() == *user; }) == currentUsers.end())
-        {
-            auto* item = new ListItemWithData<std::string>{id, user->displayName().c_str()};
-            ui.allResearchers->addItem(item);
-        }
+    auto assignedUsers = storage
+        .get_all<User>(inner_join<Assignment>(using_(&User::id)), where(c(&Assignment::researchId) == researchId));
+
+    for (const auto& row: nonAssignedUsers) {
+        auto* item = new ListItemWithData<i64>{std::get<0>(row), std::get<1>(row).c_str()};
+        ui.allResearchers->addItem(item);
     }
 
-    for (const auto& user_weak: currentUsers) {
-        auto user = user_weak.lock();
-        auto* item = new ListItemWithData<std::string>(user->id(), user->displayName().c_str());
+    for (const auto& user: assignedUsers) {
+        auto* item = new ListItemWithData<i64>(user.id, user.displayName.c_str());
         ui.currentResearchers->addItem(item);
     }
 
@@ -48,8 +52,8 @@ void EditResearchersDialog::updateButtons() {
     ui.deleteButton->setEnabled(ui.allResearchers->currentRow() >= 0 || ui.currentResearchers->currentRow() >= 0);
 }
 
-void EditResearchersDialog::appendUser(const std::string& login) {
-    auto* item = new ListItemWithData<std::string>{login, globals::db.users().at(login)->displayName().c_str()};
+void EditResearchersDialog::appendUser(User user) {
+    auto* item = new ListItemWithData<i64>{user.id, user.displayName.c_str()};
     ui.allResearchers->addItem(item);
     updateButtons();
 }
@@ -62,7 +66,7 @@ void EditResearchersDialog::newUser() {
 }
 
 void EditResearchersDialog::addResearcher() {
-    auto* item = dynamic_cast<ListItemWithData<std::string>*>(ui.allResearchers->currentItem());
+    auto* item = dynamic_cast<ListItemWithData<i64>*>(ui.allResearchers->currentItem());
 
     if (item != nullptr) {
         ui.allResearchers->takeItem(ui.allResearchers->currentRow());
@@ -73,14 +77,16 @@ void EditResearchersDialog::addResearcher() {
 }
 
 void EditResearchersDialog::deleteResearcher() {
+    using namespace sqlite_orm;
+
     if (ui.allResearchers->currentRow() < 0 && ui.currentResearchers->currentRow() >= 0) {
         ui.allResearchers->addItem(ui.currentResearchers->takeItem(ui.currentResearchers->currentRow()));
     }
     else if (ui.currentResearchers->currentRow() < 0 && ui.allResearchers->currentRow() >= 0) {
-        auto* item = dynamic_cast<ListItemWithData<std::string>*>(ui.allResearchers->currentItem());
+        auto* item = dynamic_cast<ListItemWithData<i64>*>(ui.allResearchers->currentItem());
 
         if (item != nullptr) {
-            globals::db.deleteUser(item->data());
+            StorageManager::get().remove<User>(item->itemData());
             delete ui.allResearchers->takeItem(ui.allResearchers->currentRow());
         }
     }
@@ -89,14 +95,41 @@ void EditResearchersDialog::deleteResearcher() {
 }
 
 void EditResearchersDialog::applyChanges() {
-    std::vector<std::shared_ptr<User>> users;
+    using namespace sqlite_orm;
 
-    for (int i = 0; i < ui.currentResearchers->count(); i++) {
-        auto* item = dynamic_cast<ListItemWithData<std::string>*>(ui.currentResearchers->item(i));
-        users.push_back(globals::db.users().at(item->data()));
-    }
+    auto storage = StorageManager::get();
 
-    research->assignedUsers(users);
+    storage.transaction([&] {
+        std::vector<i64> currentUsers;
+        currentUsers.reserve(ui.currentResearchers->count());
+
+        for (int i = 0; i < ui.currentResearchers->count(); i++) {
+            currentUsers.push_back(dynamic_cast<ListItemWithData<i64>*>(ui.currentResearchers->item(i))->itemData());
+        }
+
+        auto previousUsers = storage.select(&Assignment::userId,
+                                            where(c(&Assignment::researchId) == researchId));
+
+        std::vector<i64> usersToAdd;
+        std::vector<i64> usersToDelete;
+
+        std::set_difference(currentUsers.begin(), currentUsers.end(), previousUsers.begin(),
+                            previousUsers.end(), std::back_inserter(usersToAdd));
+        std::set_difference(previousUsers.begin(), previousUsers.end(), currentUsers.begin(),
+                            currentUsers.end(), std::back_inserter(usersToDelete));
+
+        storage.remove_all<Assignment>(where(c(&Assignment::researchId) == researchId
+                                             and in(&Assignment::userId, usersToDelete)));
+
+        std::vector<Assignment> assignments;
+        std::transform(usersToAdd.begin(), usersToAdd.end(), std::back_inserter(assignments),
+                       [&](auto userId) { return Assignment{researchId, userId}; });
+
+        storage.replace_range(assignments.begin(), assignments.end());
+
+        return true;
+    });
+
 }
 
 bool EditResearchersDialog::eventFilter(QObject* obj, QEvent* event) {

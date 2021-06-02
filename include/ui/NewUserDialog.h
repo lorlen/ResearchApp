@@ -1,6 +1,7 @@
 #pragma once
 
 #include "designer/ui_newuser.h"
+#include "entities/User.h"
 
 /**
  * A dialog used to create new users.
@@ -25,9 +26,8 @@ private slots:
 signals:
     /**
      * Signal fired to notify that a new user was successfully added.
-     * @param id ID of the new user.
      */
-    void userAdded(std::string login);
+    void userAdded(User user);
 
 public:
     /**

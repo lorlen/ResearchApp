@@ -2,7 +2,8 @@
 
 #include <QtWidgets/QDialog>
 #include "designer/ui_editresearchers.h"
-#include "research/Research.h"
+#include "entities/Research.h"
+#include "entities/User.h"
 
 /**
  * A modal dialog to edit researchers assigned to a research.
@@ -10,11 +11,11 @@
 class EditResearchersDialog: public QDialog {
 private:
     Ui::EditResearchers ui;
-    std::shared_ptr<Research> research;
+    decltype(Research::id) researchId;
 
 private slots:
     void updateButtons();
-    void appendUser(const std::string& login);
+    void appendUser(User user);
     void newUser();
     void addResearcher();
     void deleteResearcher();
@@ -26,9 +27,10 @@ protected:
 public:
     /**
      * Constructs an `EditResearchersDialog` instance.
-     * @param research research for which modify the researchers.
+     * @param researchers vector of researchers to modify.
      * @param parent see Qt docs.
      * @param f see Qt docs.
      */
-    explicit EditResearchersDialog(const std::shared_ptr<Research>& research, QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+    explicit EditResearchersDialog(decltype(Research::id) researchId, const std::string& title,
+                                   QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 };
