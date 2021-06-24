@@ -1,6 +1,9 @@
 #pragma once
 
+#include <memory>
+#include "db/storage.h"
 #include "designer/ui_newuser.h"
+#include "entities/User.h"
 
 /**
  * A dialog used to create new users.
@@ -10,6 +13,7 @@ class NewUserDialog: public QDialog {
 
 private:
     Ui::NewUser ui;
+    std::shared_ptr<Storage> storage;
     bool loginValid = false;
     bool passValid = false;
     bool retypePassValid = false;
@@ -25,9 +29,8 @@ private slots:
 signals:
     /**
      * Signal fired to notify that a new user was successfully added.
-     * @param id ID of the new user.
      */
-    void userAdded(std::string login);
+    void userAdded(User user);
 
 public:
     /**
@@ -35,5 +38,6 @@ public:
      * @param parent see Qt docs.
      * @param f see Qt docs.
      */
-    explicit NewUserDialog(QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+    explicit NewUserDialog(std::shared_ptr<Storage> _storage, QWidget* parent = nullptr,
+                           Qt::WindowFlags f = Qt::WindowFlags());
 };

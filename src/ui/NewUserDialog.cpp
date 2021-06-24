@@ -2,10 +2,11 @@
 
 #include <QtWidgets/QPushButton>
 
-#include "db/Database.h"
+#include "db/LoginManager.h"
+#include "sqlite_orm/sqlite_orm.h"
 
-NewUserDialog::NewUserDialog(QWidget* parent, Qt::WindowFlags f)
-        : QDialog{parent, f}, ui{} {
+NewUserDialog::NewUserDialog(std::shared_ptr<Storage> _storage, QWidget* parent, Qt::WindowFlags f)
+        : QDialog{parent, f}, ui{}, storage{std::move(_storage)} {
     ui.setupUi(this);
 
     updateButtons();
@@ -38,18 +39,9 @@ void NewUserDialog::updateButtons() {
 }
 
 void NewUserDialog::validateLogin() {
-    bool isUserInDb = false;
+    using namespace sqlite_orm;
 
-    if (!ui.login->text().isEmpty()) {
-        for (const auto& [id, user]: globals::db.users()) {
-            if (ui.login->text() == user->login().c_str()) {
-                isUserInDb = true;
-                break;
-            }
-        }
-    }
-
-    if (isUserInDb) {
+    if (storage->count<User>(where(c(&User::login) == ui.login->text().toStdString())) > 0) {
         setValid(ui.login, loginValid, false, "User already exists");
     } else if (ui.login->text().isEmpty()) {
         setValid(ui.login, loginValid, false, "Login must not be empty");
@@ -72,15 +64,12 @@ void NewUserDialog::validateRetypePass() {
 }
 
 void NewUserDialog::accept() {
-    User user(
-            ui.login->text().toStdString(),
-            ui.displayName->text().toStdString(),
-            ui.password->text().toStdString(),
-            ui.isAdmin->isChecked()
+    auto user = LoginManager::registerUser(
+        ui.login->text().toStdString(),
+        ui.displayName->text().toStdString(),
+        ui.password->text().toStdString()
     );
 
-    globals::db.addUser(user);
-
-    emit userAdded(user.login());
+    emit userAdded(*user);
     close();
 }

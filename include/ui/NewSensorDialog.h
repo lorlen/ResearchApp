@@ -1,7 +1,10 @@
 #pragma once
 
+#include <memory>
 #include <QtWidgets/QDialog>
+#include "db/storage.h"
 #include "designer/ui_newsensor.h"
+#include "entities/Sensor.h"
 
 /**
  * A dialog used to add sensors to the global database.
@@ -11,6 +14,7 @@ class NewSensorDialog: public QDialog {
 
 private:
     Ui::NewSensor ui;
+    std::shared_ptr<Storage> storage;
 
 private slots:
     void applyChanges();
@@ -18,9 +22,8 @@ private slots:
 signals:
     /**
      * Signal fired to notify that a new sensor has been added.
-     * @param id ID of the sensor added.
      */
-    void sensorAdded(size_t id);
+    void sensorAdded(Sensor sensor);
 
 public:
     /**
@@ -28,6 +31,7 @@ public:
      * @param parent see Qt docs.
      * @param f see Qt docs.
      */
-    explicit NewSensorDialog(QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+    explicit NewSensorDialog(std::shared_ptr<Storage> _storage, QWidget* parent = nullptr,
+                             Qt::WindowFlags f = Qt::WindowFlags());
     ~NewSensorDialog() override = default;
 };
