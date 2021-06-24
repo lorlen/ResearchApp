@@ -8,14 +8,13 @@
 #include <optional>
 
 #include "db/LoginManager.h"
-#include "db/StorageManager.h"
 #include "ui/ListItemWithData.h"
 #include "ui/LoginWindow.h"
 #include "ui/SensorListDialog.h"
 #include "ui/EditResearchersDialog.h"
 #include "ui/EditActionDialog.h"
 
-MainWindow::MainWindow() : mainUi{}, addUi{}, selectUi{} {
+MainWindow::MainWindow(std::shared_ptr<Storage> _storage) : mainUi{}, addUi{}, selectUi{}, storage{std::move(_storage)} {
     mainUi.setupUi(this);
     addUi.setupUi(mainUi.pageAdd);
     selectUi.setupUi(mainUi.pageSelect);
@@ -31,8 +30,8 @@ MainWindow::MainWindow() : mainUi{}, addUi{}, selectUi{} {
     connect(selectUi.checklist, &QListWidget::itemChanged, this, [this](QListWidgetItem* item) {
         using namespace sqlite_orm;
 
-        StorageManager::get().update_all(set(c(&Action::isChecked) = item->checkState() == Qt::Checked),
-                                         where(c(&Action::ordinal) == selectUi.checklist->row(item)));
+        this->storage->update_all(set(c(&Action::isChecked) = item->checkState() == Qt::Checked),
+                                  where(c(&Action::ordinal) == selectUi.checklist->row(item)));
         updateProgress();
     });
 
@@ -58,9 +57,7 @@ void MainWindow::setDisplayedPage(int index) {
 void MainWindow::enterSelectMode() {
     using namespace sqlite_orm;
 
-    auto storage = StorageManager::get();
-
-    auto researches = storage.get_all<Research>(
+    auto researches = storage->get_all<Research>(
         where(c(&Research::startDate) == Date(mainUi.calendarWidget->selectedDate()))
     );
 
@@ -77,7 +74,7 @@ void MainWindow::enterSelectMode() {
     selectUi.deleteButton->setEnabled(loadedResearch.has_value() && LoginManager::currentUser()->isAdmin);
 
     if (loadedResearch.has_value()) {
-        researchActions = storage.get_all<Action>(where(c(&Action::researchId) == loadedResearch->id),
+        researchActions = storage->get_all<Action>(where(c(&Action::researchId) == loadedResearch->id),
                                                   order_by(&Action::ordinal));
         selectUi.researchTitle->setText(QString("Title: ") + loadedResearch->title.c_str());
         selectUi.researchInfo->setText(loadedResearch->info.c_str());
@@ -90,7 +87,7 @@ void MainWindow::enterSelectMode() {
         selectUi.endDate->setText("End date:");
     }
 
-    auto assignedCount = storage.count<User>(inner_join<Assignment>(using_(&User::id)),
+    auto assignedCount = storage->count<User>(inner_join<Assignment>(using_(&User::id)),
                                              inner_join<Research>(using_(&Research::id)),
                                              where(c(&User::id) == LoginManager::currentUser()->id
                                                    and c(&Research::id) == loadedResearch->id));
@@ -118,13 +115,11 @@ void MainWindow::enterSelectMode() {
 void MainWindow::enterEditMode() {
     using namespace sqlite_orm;
 
-    auto storage = StorageManager::get();
-
     addUi.checklist->clear();
 
     if (researchId > 0) {
-        auto loadedResearch = storage.get<Research>(researchId);
-        auto researchActions = storage.get_all<Action>(where(c(&Action::researchId) == researchId));
+        auto loadedResearch = storage->get<Research>(researchId);
+        auto researchActions = storage->get_all<Action>(where(c(&Action::researchId) == researchId));
 
         addUi.researchTitle->setText(loadedResearch.title.c_str());
         addUi.researchInfo->setText(loadedResearch.title.c_str());
@@ -138,7 +133,7 @@ void MainWindow::enterEditMode() {
             addUi.checklist->addItem(item);
         }
     } else {
-        researchId = storage.insert(Research{});
+        researchId = storage->insert(Research{});
 
         addUi.researchTitle->setText("");
         addUi.researchInfo->setText("");
@@ -160,14 +155,14 @@ void MainWindow::changeDate() {
 }
 
 void MainWindow::showSensors() {
-    auto* sensorListDialog = new SensorListDialog{researchId, this};
+    auto* sensorListDialog = new SensorListDialog{storage, researchId, this};
     sensorListDialog->setAttribute(Qt::WA_DeleteOnClose);
     sensorListDialog->show();
 }
 
 void MainWindow::logout() {
     LoginManager::logOut();
-    auto* loginWindow = new LoginWindow{};
+    auto* loginWindow = new LoginWindow{storage};
     loginWindow->setAttribute(Qt::WA_DeleteOnClose);
     loginWindow->show();
     close();
@@ -186,7 +181,7 @@ void MainWindow::updateProgress() {
 
 void MainWindow::deleteResearch() {
     if (researchId > 0) {
-        StorageManager::get().remove<Research>(researchId);
+        storage->remove<Research>(researchId);
         enterSelectMode();
     }
 }
@@ -197,7 +192,7 @@ void MainWindow::updateButtons() {
 }
 
 void MainWindow::manageResearchers() {
-    auto* editResearchersDialog = new EditResearchersDialog{researchId, addUi.researchTitle->text().toStdString(), this};
+    auto* editResearchersDialog = new EditResearchersDialog{storage, researchId, addUi.researchTitle->text().toStdString(), this};
     editResearchersDialog->setAttribute(Qt::WA_DeleteOnClose);
     editResearchersDialog->show();
 }
@@ -220,7 +215,7 @@ void MainWindow::newAction() {
     action.ordinal = addUi.checklist->count();
     action.researchId = researchId;
 
-    auto* editActionDialog = new EditActionDialog{action, this};
+    auto* editActionDialog = new EditActionDialog{storage, action, this};
     connect(editActionDialog, &EditActionDialog::actionModified, this, &MainWindow::appendAction);
     editActionDialog->setAttribute(Qt::WA_DeleteOnClose);
     editActionDialog->show();
@@ -228,10 +223,10 @@ void MainWindow::newAction() {
 
 void MainWindow::editAction() {
     if (addUi.checklist->currentRow() >= 0) {
-        auto action = StorageManager::get().get<Action>(
+        auto action = storage->get<Action>(
             dynamic_cast<ListItemWithData<i64>*>(addUi.checklist->currentItem())->itemData());
 
-        auto* editActionDialog = new EditActionDialog{action, this};
+        auto* editActionDialog = new EditActionDialog{storage, action, this};
         connect(editActionDialog, &EditActionDialog::actionModified, this, &MainWindow::appendAction);
         editActionDialog->setAttribute(Qt::WA_DeleteOnClose);
         editActionDialog->show();
@@ -242,9 +237,8 @@ void MainWindow::deleteAction() {
     using namespace sqlite_orm;
 
     if (addUi.checklist->currentRow() >= 0) {
-        auto storage = StorageManager::get();
-        storage.remove_all<Action>(where(c(&Action::ordinal) == addUi.checklist->currentRow()));
-        storage.update_all(set(c(&Action::ordinal) = c(&Action::ordinal) - 1),
+        storage->remove_all<Action>(where(c(&Action::ordinal) == addUi.checklist->currentRow()));
+        storage->update_all(set(c(&Action::ordinal) = c(&Action::ordinal) - 1),
                            where(c(&Action::ordinal) > addUi.checklist->currentRow()));
 
         delete addUi.checklist->takeItem(addUi.checklist->currentRow());
@@ -263,14 +257,14 @@ void MainWindow::applyChanges() {
         LoginManager::currentUser()->id
     };
 
-    StorageManager::get().update(research);
+    storage->update(research);
 
     enterSelectMode();
 }
 
 void MainWindow::cancelChanges() {
     if (newResearch) {
-        StorageManager::get().remove<Research>(researchId);
+        storage->remove<Research>(researchId);
     }
 
     enterSelectMode();

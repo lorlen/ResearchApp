@@ -3,11 +3,10 @@
 #include <QtWidgets/QPushButton>
 
 #include "db/LoginManager.h"
-#include "db/StorageManager.h"
 #include "sqlite_orm/sqlite_orm.h"
 
-NewUserDialog::NewUserDialog(QWidget* parent, Qt::WindowFlags f)
-        : QDialog{parent, f}, ui{} {
+NewUserDialog::NewUserDialog(std::shared_ptr<Storage> _storage, QWidget* parent, Qt::WindowFlags f)
+        : QDialog{parent, f}, ui{}, storage{std::move(_storage)} {
     ui.setupUi(this);
 
     updateButtons();
@@ -42,7 +41,7 @@ void NewUserDialog::updateButtons() {
 void NewUserDialog::validateLogin() {
     using namespace sqlite_orm;
 
-    if (StorageManager::get().count<User>(where(c(&User::login) == ui.login->text().toStdString())) > 0) {
+    if (storage->count<User>(where(c(&User::login) == ui.login->text().toStdString())) > 0) {
         setValid(ui.login, loginValid, false, "User already exists");
     } else if (ui.login->text().isEmpty()) {
         setValid(ui.login, loginValid, false, "Login must not be empty");

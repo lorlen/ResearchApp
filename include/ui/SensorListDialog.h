@@ -1,6 +1,8 @@
 #pragma once
 
+#include <memory>
 #include <QtWidgets/QDialog>
+#include "db/storage.h"
 #include "designer/ui_sensorlist.h"
 #include "entities/Research.h"
 
@@ -9,6 +11,7 @@
  */
 class SensorListDialog: public QDialog {
     Ui::SensorList ui;
+    std::shared_ptr<Storage> storage;
 
 public:
     /**
@@ -17,5 +20,6 @@ public:
      * @param parent see Qt docs.
      * @param f see Qt docs.
      */
-    explicit SensorListDialog(decltype(Research::id) researchId, QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+    explicit SensorListDialog(std::shared_ptr<Storage> _storage, decltype(Research::id) researchId,
+                              QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 };

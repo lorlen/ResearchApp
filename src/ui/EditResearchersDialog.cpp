@@ -1,26 +1,24 @@
 #include <algorithm>
 
-#include "db/StorageManager.h"
 #include "ui/EditResearchersDialog.h"
 #include "ui/NewUserDialog.h"
 #include "ui/ListItemWithData.h"
 
-EditResearchersDialog::EditResearchersDialog(decltype(Research::id) researchId, const std::string& title, QWidget* parent, Qt::WindowFlags f)
-        : QDialog{parent, f}, ui{}, researchId{researchId} {
+EditResearchersDialog::EditResearchersDialog(std::shared_ptr<Storage> _storage, decltype(Research::id) researchId,
+                                             const std::string& title, QWidget* parent, Qt::WindowFlags f)
+        : QDialog{parent, f}, ui{}, storage{std::move(_storage)}, researchId{researchId} {
     using namespace sqlite_orm;
 
     ui.setupUi(this);
     ui.researchTitle->setText(QString("Research title: ") + title.c_str());
 
-    auto storage = StorageManager::get();
-
     auto user_cols = columns(&User::id, &User::displayName);
-    auto nonAssignedUsers = storage.select(except(select(user_cols),
+    auto nonAssignedUsers = storage->select(except(select(user_cols),
                                                   select(user_cols, inner_join<Assignment>(using_(&User::id)),
                                                          where(c(&Assignment::researchId) == researchId))));
 
     auto assignedUsers = storage
-        .get_all<User>(inner_join<Assignment>(using_(&User::id)), where(c(&Assignment::researchId) == researchId));
+        ->get_all<User>(inner_join<Assignment>(using_(&User::id)), where(c(&Assignment::researchId) == researchId));
 
     for (const auto& row: nonAssignedUsers) {
         auto* item = new ListItemWithData<i64>{std::get<0>(row), std::get<1>(row).c_str()};
@@ -59,7 +57,7 @@ void EditResearchersDialog::appendUser(User user) {
 }
 
 void EditResearchersDialog::newUser() {
-    auto* dialog = new NewUserDialog{this};
+    auto* dialog = new NewUserDialog{storage, this};
     connect(dialog, &NewUserDialog::userAdded, this, &EditResearchersDialog::appendUser);
     dialog->setAttribute(Qt::WA_DeleteOnClose);
     dialog->show();
@@ -86,7 +84,7 @@ void EditResearchersDialog::deleteResearcher() {
         auto* item = dynamic_cast<ListItemWithData<i64>*>(ui.allResearchers->currentItem());
 
         if (item != nullptr) {
-            StorageManager::get().remove<User>(item->itemData());
+            storage->remove<User>(item->itemData());
             delete ui.allResearchers->takeItem(ui.allResearchers->currentRow());
         }
     }
@@ -97,9 +95,7 @@ void EditResearchersDialog::deleteResearcher() {
 void EditResearchersDialog::applyChanges() {
     using namespace sqlite_orm;
 
-    auto storage = StorageManager::get();
-
-    storage.transaction([&] {
+    storage->transaction([&] {
         std::vector<i64> currentUsers;
         currentUsers.reserve(ui.currentResearchers->count());
 
@@ -107,7 +103,7 @@ void EditResearchersDialog::applyChanges() {
             currentUsers.push_back(dynamic_cast<ListItemWithData<i64>*>(ui.currentResearchers->item(i))->itemData());
         }
 
-        auto previousUsers = storage.select(&Assignment::userId,
+        auto previousUsers = storage->select(&Assignment::userId,
                                             where(c(&Assignment::researchId) == researchId));
 
         std::vector<i64> usersToAdd;
@@ -118,14 +114,14 @@ void EditResearchersDialog::applyChanges() {
         std::set_difference(previousUsers.begin(), previousUsers.end(), currentUsers.begin(),
                             currentUsers.end(), std::back_inserter(usersToDelete));
 
-        storage.remove_all<Assignment>(where(c(&Assignment::researchId) == researchId
+        storage->remove_all<Assignment>(where(c(&Assignment::researchId) == researchId
                                              and in(&Assignment::userId, usersToDelete)));
 
         std::vector<Assignment> assignments;
         std::transform(usersToAdd.begin(), usersToAdd.end(), std::back_inserter(assignments),
                        [&](auto userId) { return Assignment{researchId, userId}; });
 
-        storage.replace_range(assignments.begin(), assignments.end());
+        storage->replace_range(assignments.begin(), assignments.end());
 
         return true;
     });

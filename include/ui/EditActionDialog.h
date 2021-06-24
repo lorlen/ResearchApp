@@ -1,6 +1,8 @@
 #pragma once
 
+#include <memory>
 #include <QtWidgets/QDialog>
+#include "db/storage.h"
 #include "designer/ui_editaction.h"
 #include "entities/Action.h"
 #include "entities/Research.h"
@@ -13,6 +15,7 @@ class EditActionDialog: public QDialog {
 
 private:
     Ui::EditAction ui;
+    std::shared_ptr<Storage> storage;
     Action action;
     bool newAction = false;
 
@@ -42,6 +45,7 @@ public:
      * @param parent see Qt docs.
      * @param f see Qt docs.
      */
-    explicit EditActionDialog(const Action& action, QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+    explicit EditActionDialog(std::shared_ptr<Storage> _storage, const Action& action, QWidget* parent = nullptr,
+                              Qt::WindowFlags f = Qt::WindowFlags());
     ~EditActionDialog() override = default;
 };

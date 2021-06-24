@@ -2,30 +2,27 @@
 
 #include <vector>
 
-#include "db/StorageManager.h"
 #include "entities/Action.h"
 #include "ui/NewSensorDialog.h"
 #include "ui/ListItemWithData.h"
 
-EditActionDialog::EditActionDialog(const Action& action, QWidget* parent, Qt::WindowFlags f)
-        : QDialog{parent, f}, ui{}, action{action} {
+EditActionDialog::EditActionDialog(std::shared_ptr<Storage> _storage, const Action& action, QWidget* parent, Qt::WindowFlags f)
+        : QDialog{parent, f}, ui{}, storage{std::move(_storage)}, action{action} {
     using namespace sqlite_orm;
 
     ui.setupUi(this);
-
-    auto storage = StorageManager::get();
 
     if (action.id > 0) {
         ui.actionTitle->setText(action.title.c_str());
         ui.requiredMeasurement->setChecked(action.isRequired);
 
         auto sensor_cols = columns(&Sensor::id, &Sensor::label, &Sensor::type, &Sensor::unit);
-        auto notUsedSensors = storage.select(except(select(sensor_cols),
+        auto notUsedSensors = storage->select(except(select(sensor_cols),
                                                     select(sensor_cols,
                                                            inner_join<SensorUsage>(using_(&Sensor::id)),
                                                            where(c(&SensorUsage::actionId) == action.id))));
 
-        auto usedSensors = storage.get_all<Sensor>(inner_join<SensorUsage>(using_(&Sensor::id)),
+        auto usedSensors = storage->get_all<Sensor>(inner_join<SensorUsage>(using_(&Sensor::id)),
             where(c(&SensorUsage::actionId) == action.id));
 
         for (const auto& row: notUsedSensors) {
@@ -39,12 +36,12 @@ EditActionDialog::EditActionDialog(const Action& action, QWidget* parent, Qt::Wi
             ui.currentSensors->addItem(item);
         }
     } else {
-        for (const auto& sensor: storage.iterate<Sensor>()) {
+        for (const auto& sensor: storage->iterate<Sensor>()) {
             auto* item = new ListItemWithData<i64>{sensor.id, sensor.description().c_str()};
             ui.allSensors->addItem(item);
         }
 
-        this->action.id = storage.insert(action);
+        this->action.id = storage->insert(action);
         newAction = true;
     }
 
@@ -76,7 +73,7 @@ void EditActionDialog::appendSensor(const Sensor& sensor) {
 }
 
 void EditActionDialog::newSensor() {
-    auto* dialog = new NewSensorDialog{this};
+    auto* dialog = new NewSensorDialog{storage, this};
     connect(dialog, &NewSensorDialog::sensorAdded, this, &EditActionDialog::appendSensor);
     dialog->setAttribute(Qt::WA_DeleteOnClose);
     dialog->show();
@@ -97,7 +94,7 @@ void EditActionDialog::deleteSensor() {
         auto* item = dynamic_cast<ListItemWithData<i64>*>(ui.allSensors->currentItem());
 
         if (item != nullptr) {
-            StorageManager::get().remove<Sensor>(item->itemData());
+            storage->remove<Sensor>(item->itemData());
             delete ui.allSensors->takeItem(ui.allSensors->currentRow());
         }
     }
@@ -108,13 +105,11 @@ void EditActionDialog::deleteSensor() {
 void EditActionDialog::applyChanges() {
     using namespace sqlite_orm;
 
-    auto storage = StorageManager::get();
-
-    storage.transaction([&] {
+    storage->transaction([&] {
         action.title = ui.actionTitle->text().toStdString();
         action.isRequired = ui.requiredMeasurement->isChecked();
 
-        storage.update(action);
+        storage->update(action);
 
         std::vector<i64> currentSensors;
         currentSensors.reserve(ui.currentSensors->count());
@@ -123,7 +118,7 @@ void EditActionDialog::applyChanges() {
             currentSensors.push_back(dynamic_cast<ListItemWithData<i64>*>(ui.currentSensors->item(i))->itemData());
         }
 
-        auto previousSensors = storage.select(&SensorUsage::sensorId,
+        auto previousSensors = storage->select(&SensorUsage::sensorId,
                                               where(c(&SensorUsage::actionId) == action.id));
 
         std::vector<i64> sensorsToAdd;
@@ -134,14 +129,14 @@ void EditActionDialog::applyChanges() {
         std::set_difference(previousSensors.begin(), previousSensors.end(), currentSensors.begin(),
                             currentSensors.end(), std::back_inserter(sensorsToDelete));
 
-        storage.remove_all<SensorUsage>(where(c(&SensorUsage::actionId) == action.id
+        storage->remove_all<SensorUsage>(where(c(&SensorUsage::actionId) == action.id
                                         and in(&SensorUsage::sensorId, sensorsToDelete)));
 
         std::vector<SensorUsage> usages;
         std::transform(sensorsToAdd.begin(), sensorsToAdd.end(), std::back_inserter(usages),
                        [&](auto sensorId) { return SensorUsage{action.id, sensorId}; });
 
-        storage.replace_range(usages.begin(), usages.end());
+        storage->replace_range(usages.begin(), usages.end());
 
         return true;
     });
@@ -151,7 +146,7 @@ void EditActionDialog::applyChanges() {
 
 void EditActionDialog::cancelChanges() {
     if (newAction) {
-        StorageManager::get().remove<Action>(action.id);
+        storage->remove<Action>(action.id);
     }
 }
 

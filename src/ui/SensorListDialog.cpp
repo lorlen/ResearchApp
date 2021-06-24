@@ -2,20 +2,20 @@
 
 #include <sqlite_orm/sqlite_orm.h>
 
-#include "db/StorageManager.h"
 #include "entities/Research.h"
 #include "entities/Action.h"
 #include "entities/SensorUsage.h"
 
-SensorListDialog::SensorListDialog(decltype(Research::id) researchId, QWidget* parent, Qt::WindowFlags f)
-        : QDialog{parent, f}, ui{} {
+SensorListDialog::SensorListDialog(std::shared_ptr<Storage> _storage, decltype(Research::id) researchId,
+                                   QWidget* parent, Qt::WindowFlags f)
+        : QDialog{parent, f}, ui{}, storage{std::move(_storage)} {
     using namespace sqlite_orm;
     
     ui.setupUi(this);
 
     connect(ui.okButton, &QPushButton::clicked, this, &SensorListDialog::close);
 
-    auto sensors = StorageManager::get().get_all<Sensor>(inner_join<SensorUsage>(using_(&Sensor::id)),
+    auto sensors = storage->get_all<Sensor>(inner_join<SensorUsage>(using_(&Sensor::id)),
                                                          inner_join<Action>(using_(&Action::id)),
                                                          where(c(&Action::researchId) == researchId),
                                                          group_by(&Sensor::id));

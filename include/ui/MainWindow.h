@@ -1,8 +1,10 @@
 #pragma once
 
+#include <memory>
 #include <optional>
 #include <vector>
 #include <QWidget>
+#include "db/storage.h"
 #include "designer/ui_main.h"
 #include "designer/ui_addresearch.h"
 #include "designer/ui_selectresearch.h"
@@ -20,6 +22,7 @@ private:
     Ui::Main mainUi;
     Ui::AddResearch addUi;
     Ui::SelectResearch selectUi;
+    std::shared_ptr<Storage> storage;
     decltype(Research::id) researchId = -1;
     bool newResearch = true;
 
@@ -44,5 +47,5 @@ private slots:
     void cancelChanges();
 
 public:
-    MainWindow();
+    MainWindow(std::shared_ptr<Storage> _storage);
 };

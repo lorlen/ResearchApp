@@ -7,7 +7,7 @@
 #include "ui/LoginWindow.h"
 #include "ui/MainWindow.h"
 
-LoginWindow::LoginWindow() : ui{} {
+LoginWindow::LoginWindow(std::shared_ptr<Storage> _storage) : ui{}, storage{std::move(_storage)} {
     ui.setupUi(this);
     ui.loginline->setFocus();
     move(QApplication::desktop()->geometry().center() - rect().center());
@@ -21,7 +21,7 @@ void LoginWindow::tryLogin() {
 
     if (user.has_value()) {
         hide();
-        auto* mainWindow = new MainWindow{};
+        auto* mainWindow = new MainWindow{storage};
         mainWindow->setAttribute(Qt::WA_DeleteOnClose);
         mainWindow->show();
     } else {

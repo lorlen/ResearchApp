@@ -1,6 +1,8 @@
 #pragma once
 
+#include <memory>
 #include <QtWidgets/QDialog>
+#include "db/storage.h"
 #include "designer/ui_newsensor.h"
 #include "entities/Sensor.h"
 
@@ -12,6 +14,7 @@ class NewSensorDialog: public QDialog {
 
 private:
     Ui::NewSensor ui;
+    std::shared_ptr<Storage> storage;
 
 private slots:
     void applyChanges();
@@ -28,6 +31,7 @@ public:
      * @param parent see Qt docs.
      * @param f see Qt docs.
      */
-    explicit NewSensorDialog(QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+    explicit NewSensorDialog(std::shared_ptr<Storage> _storage, QWidget* parent = nullptr,
+                             Qt::WindowFlags f = Qt::WindowFlags());
     ~NewSensorDialog() override = default;
 };
